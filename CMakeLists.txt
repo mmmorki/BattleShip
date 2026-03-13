@@ -19,6 +19,7 @@ add_executable(BattleShip source/main.cpp
         source/MainWindow.cpp
         source/Server.cpp
         source/Field.cpp
+        source/Cell.cpp
         headers/Cell.h
         headers/Field.h
         headers/MainWindow.h

@@ -13,76 +13,28 @@ public: signals:
     void clickSignal(int row, int col);
 
 public:
-    explicit Cell(const int row, const int col, QWidget* parent = nullptr)
-        : m_row{ row }
-        , m_col{ col }
-    {
-        m_currentStyle = new QString{ "background-color: white; border: 1px solid black" };
-        setFixedSize(40, 40);
-        setStyleSheet(*m_currentStyle);
+    explicit Cell(int row, int col, QWidget* parent = nullptr);
 
-        QObject::connect(this, &QPushButton::clicked,
-            [this](){ emit clickSignal(m_row, m_col); });
-    }
+    void setPreview();
 
-    void setPreview()
-    {
-        setStyleSheet("background-color: grey; border: 1xp solid black");
-    }
+    void cancelPreview();
 
-    void cancelPreview()
-    {
-        setStyleSheet(*m_currentStyle);
-    }
+    void addShip();
 
-    void addShip()
-    {
-        m_currentStyle->clear();
-        m_currentStyle->append("background-color: black; border: 1px solid black");
-        setStyleSheet(*m_currentStyle);
-        m_isShip = true;
-    }
+    void removeShip();
 
-    void removeShip()
-    {
-        m_currentStyle->clear();
-        m_currentStyle->append("background-color: white; border: 1px solid black");
-        setStyleSheet(*m_currentStyle);
-        m_isShip = false;
-    }
+    [[nodiscard]] bool isShip() const;
 
-    [[nodiscard]] bool isShip() const
-    {
-        return m_isShip;
-    }
+    void link(Cell* nextShipCellPtr);
 
-    void link(Cell* nextShipCellPtr)
-    {
-        m_nextShipCellPtr = nextShipCellPtr;
-    }
+    [[nodiscard]] Cell* getNextShipCellPtr() const;
 
-    [[nodiscard]] Cell* getNextShipCellPtr() const
-    {
-        return m_nextShipCellPtr;
-    }
-
-    void deleteNextCellShipPtr()
-    {
-        m_nextShipCellPtr = nullptr;
-    }
+    void deleteNextCellShipPtr();
 
 protected:
-    void enterEvent(QEnterEvent* event) override
-    {
-        emit enterCellSignal(m_row, m_col);
-        QPushButton::enterEvent(event);
-    }
+    void enterEvent(QEnterEvent* event) override;
 
-    void leaveEvent(QEvent* event) override
-    {
-        emit leaveCellSignal(m_row, m_col);
-        QPushButton::leaveEvent(event);
-    }
+    void leaveEvent(QEvent* event) override;
 
 private:
     int m_row{};
