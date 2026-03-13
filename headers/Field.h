@@ -54,6 +54,8 @@ private slots:
 public:
     explicit Field(Owner owner, QWidget* parent = nullptr);
 
+    ~Field() override = default;
+
     void showShipButtons() const;
 
     void hideShipButtons() const;

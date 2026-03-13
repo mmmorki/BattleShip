@@ -15,6 +15,8 @@ public: signals:
 public:
     explicit Cell(int row, int col, QWidget* parent = nullptr);
 
+    ~Cell() override = default;
+
     void setPreview();
 
     void cancelPreview();
