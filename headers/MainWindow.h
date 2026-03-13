@@ -1,14 +1,15 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "Field.h"
-
 #include <QMainWindow>
-#include <QWidget>
-#include <QStackedWidget>
-#include <QGridLayout>
-#include <QVBoxLayout>
-#include <QPushButton>
+
+class Field;
+
+class QGridLayout;
+class QStackedWidget;
+class QVBoxLayout;
+class QPushButton;
+class QHBoxLayout;
 
 class MainWindow final : public QMainWindow
 {

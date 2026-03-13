@@ -1,4 +1,9 @@
 #include "MainWindow.h"
+#include "Field.h"
+
+#include <QGridLayout>
+#include <QStackedWidget>
+#include <QPushButton>
 
 MainWindow::MainWindow()
     : m_central{ new QWidget{ this } }
