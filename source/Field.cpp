@@ -1,4 +1,9 @@
 #include "Field.h"
+#include "Cell.h"
+
+#include <QGridLayout>
+#include <QHBoxLayout>
+#include <QPushButton>
 
 void Field::enterCellSlot(const int row, const int col)
 {

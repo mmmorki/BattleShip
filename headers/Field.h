@@ -1,13 +1,15 @@
 #ifndef FIELD_H
 #define FIELD_H
 
-#include "Cell.h"
-
-#include <QPushButton>
-#include <QGridLayout>
-#include <QHBoxLayout>
-
 #include <array>
+
+#include <QWidget>
+
+class Cell;
+
+class QGridLayout;
+class QHBoxLayout;
+class QPushButton;
 
 class Field final : public QWidget
 {
