@@ -7,112 +7,122 @@
 
 void Field::enterCellSlot(const int row, const int col)
 {
-    if (m_addMode == AddMode::NoMode || isTooManyShips()) return;
-
-    if (m_addOrientation == AddOrientation::Vertical)
+    if (m_owner == Owner::Player && m_stage == Stage::Prepare)
     {
-        if (row + static_cast<int>(m_addMode) - 1 >= 10) return;
+        if (m_addMode == AddMode::NoMode || isTooManyShips() || isTooLong(row, col)
+            || isShipNear(row, col)) return;
 
-        for (std::size_t index{ 0 }; index < static_cast<int>(m_addMode); ++index)
-            m_cellData[row + index][col]->setPreview();
+        if (m_addOrientation == AddOrientation::Vertical)
+        {
+            for (std::size_t index{ 0 }; index <= static_cast<int>(m_addMode); ++index)
+                m_cellData[row + index][col]->setPreview();
+        }
+
+        else
+        {
+            for (std::size_t index{ 0 }; index <= static_cast<int>(m_addMode); ++index)
+                m_cellData[row][col + index]->setPreview();
+        }
     }
 
-    else
+    else if (m_owner == Owner::Opponent && m_stage == Stage::Game)
     {
-        if (col + static_cast<int>(m_addMode) - 1 >= 10) return;
+        if (m_shotMode == ShotMode::NoMode) return;
 
-        for (std::size_t index{ 0 }; index < static_cast<int>(m_addMode); ++index)
-            m_cellData[row][col + index]->setPreview();
+
     }
 }
 
 void Field::leaveCellSlot(const int row, const int col)
 {
-    if (m_addMode == AddMode::NoMode) return;
-
-    for (std::size_t index{ 0 }; index < 4; ++index)
+    if (m_owner == Owner::Player && m_stage == Stage::Prepare)
     {
-        if (row + index < 10)
-            m_cellData[row + index][col]->cancelPreview();
-        if (col + index < 10)
-            m_cellData[row][col + index]->cancelPreview();
+        if (m_addMode == AddMode::NoMode) return;
+
+        for (std::size_t index{ 0 }; index < 4; ++index)
+        {
+            if (row + index < 10)
+                m_cellData[row + index][col]->cancelPreview();
+            if (col + index < 10)
+                m_cellData[row][col + index]->cancelPreview();
+        }
     }
 }
 
 void Field::clickCellSlot(const int row, const int col)
     {
-        if (m_cellData[row][col]->isShip())
+        if (m_owner == Owner::Player && m_stage == Stage::Prepare)
         {
-            int removedShipCellsCounter{ 0 };
-            Cell* currentCell{ m_cellData[row][col]->getNextShipCellPtr() };
-            m_cellData[row][col]->deleteNextCellShipPtr();
-
-            while (currentCell != nullptr)
+            if (m_cellData[row][col]->isShip())
             {
-                currentCell->removeShip();
-                ++removedShipCellsCounter;
-                Cell* previousCell{ currentCell };
-                currentCell = currentCell->getNextShipCellPtr();
-                previousCell->deleteNextCellShipPtr();
+                int removedShipCellsCounter{ 0 };
+                Cell* currentCell{ m_cellData[row][col]->getNextShipCellPtr() };
+                m_cellData[row][col]->deleteNextCellShipPtr();
+
+                while (currentCell != nullptr)
+                {
+                    currentCell->removeShip();
+                    ++removedShipCellsCounter;
+                    Cell* previousCell{ currentCell };
+                    currentCell = currentCell->getNextShipCellPtr();
+                    previousCell->deleteNextCellShipPtr();
+                }
+
+                --m_shipsLeft[removedShipCellsCounter - 1];
+
+                return;
             }
 
-            --m_shipsLeft[removedShipCellsCounter - 1];
+            if (m_addMode == AddMode::NoMode || isTooManyShips() || isTooLong(row, col) || isShipNear(row, col)) return;
 
-            return;
-        }
-
-        if (m_addMode == AddMode::NoMode || isTooManyShips()) return;
-
-        if (m_addOrientation == AddOrientation::Vertical)
-        {
-            if (row + static_cast<int>(m_addMode) - 1 >= 10) return;
-
-            Cell* previousCell{ nullptr };
-            ++m_shipsLeft[static_cast<int>(m_addMode) - 1];
-
-            for (std::size_t index{ 0 }; index < static_cast<int>(m_addMode); ++index)
+            if (m_addOrientation == AddOrientation::Vertical)
             {
-                Cell* currentCell{ m_cellData[row + index][col] };
+                Cell* previousCell{ nullptr };
+                ++m_shipsLeft[static_cast<int>(m_addMode)];
 
-                if (index > 0 && previousCell) previousCell->link(currentCell);
+                for (std::size_t index{ 0 }; index <= static_cast<int>(m_addMode); ++index)
+                {
+                    Cell* currentCell{ m_cellData[row + index][col] };
 
-                if (index == static_cast<int>(m_addMode) - 1)
-                    currentCell->link(m_cellData[row][col]);
+                    if (index > 0 && previousCell) previousCell->link(currentCell);
 
-                currentCell->addShip();
-                previousCell = currentCell;
+                    if (index == static_cast<int>(m_addMode))
+                        currentCell->link(m_cellData[row][col]);
+
+                    currentCell->addShip();
+                    previousCell = currentCell;
+                }
+
+                return;
             }
 
-            return;
-        }
-
-        if (m_addOrientation == AddOrientation::Horizontal)
-        {
-            if (col + static_cast<int>(m_addMode) - 1 >= 10) return;
-
-            Cell* previousCell{ nullptr };
-            ++m_shipsLeft[static_cast<int>(m_addMode) - 1];
-
-            for (std::size_t index{ 0 }; index < static_cast<int>(m_addMode); ++index)
+            if (m_addOrientation == AddOrientation::Horizontal)
             {
-                Cell* currentCell{ m_cellData[row][col + index] };
+                Cell* previousCell{ nullptr };
+                ++m_shipsLeft[static_cast<int>(m_addMode)];
 
-                if (index > 0 && previousCell) previousCell->link(currentCell);
+                for (std::size_t index{ 0 }; index <= static_cast<int>(m_addMode); ++index)
+                {
+                    Cell* currentCell{ m_cellData[row][col + index] };
 
-                if (index == static_cast<int>(m_addMode) - 1)
-                    currentCell->link(m_cellData[row][col]);
+                    if (index > 0 && previousCell) previousCell->link(currentCell);
 
-                currentCell->addShip();
-                previousCell = currentCell;
+                    if (index == static_cast<int>(m_addMode))
+                        currentCell->link(m_cellData[row][col]);
+
+                    currentCell->addShip();
+                    previousCell = currentCell;
+                }
             }
-
-            return;
         }
     }
 
 Field::Field(const Owner owner, QWidget* parent)
     : QWidget(parent)
+    , m_stage{ Stage::Prepare }
     , m_owner{ owner }
+    , m_addMode{ AddMode::NoMode }
+    , m_shotMode{ ShotMode::NoMode }
     , m_layout{ new QGridLayout{ this } }
     , m_addShipBtnLayout{ new QHBoxLayout{ this } }
     , m_addShip1Btn{ new QPushButton{ "Лодка", this } }
@@ -204,5 +214,140 @@ void Field::hideShipButtons() const
 
 bool Field::isTooManyShips() const
 {
-    return m_shipsLeft[static_cast<std::size_t>(m_addMode) - 1] >= 4 - static_cast<int>(m_addMode) + 1;
+    return m_shipsLeft[static_cast<std::size_t>(m_addMode)] >= 4 - static_cast<int>(m_addMode);
+}
+
+bool Field::isShipNear(const int row, const int col) const
+{
+    int boolSum{};
+
+    const int length{ static_cast<int>(m_addMode) };
+
+    switch (m_addOrientation)
+    {
+    case AddOrientation::Vertical:
+    {
+        if (col - 1 >= 0)
+        {
+            for (std::size_t index{ 0 }; index <= length; ++index)
+                boolSum += static_cast<int>(m_cellData[row + index][col - 1]->isShip());
+
+            if (row - 1 >= 0)
+            {
+                boolSum += static_cast<int>(m_cellData[row - 1][col - 1]->isShip());
+                boolSum += static_cast<int>(m_cellData[row - 1][col]->isShip());
+            }
+
+            if (row + length + 1 < 10)
+            {
+                boolSum += static_cast<int>(m_cellData[row + length + 1][col - 1]->isShip());
+                boolSum += static_cast<int>(m_cellData[row + length + 1][col]->isShip());
+            }
+        }
+
+        if (col + 1 < 10)
+        {
+            for (std::size_t index{ 0 }; index <= length; ++index)
+                boolSum += static_cast<int>(m_cellData[row + index][col + 1]->isShip());
+
+            if (row - 1 >= 0)
+                boolSum += static_cast<int>(m_cellData[row - 1][col + 1]->isShip());
+
+            if (row + length + 1 < 10)
+                boolSum += static_cast<int>(m_cellData[row + length + 1][col + 1]->isShip());
+        }
+
+        for (std::size_t index{ 0 }; index <= length; ++index)
+            boolSum += static_cast<int>(m_cellData[row + index][col]->isShip());
+
+        return static_cast<bool>(boolSum);
+    }
+    case AddOrientation::Horizontal:
+    {
+        if (row - 1 >= 0)
+        {
+            for (std::size_t index{ 0 }; index <= length; ++ index)
+                boolSum += static_cast<int>(m_cellData[row - 1][col + index]->isShip());
+
+            if (col - 1 >= 0)
+            {
+                boolSum += static_cast<int>(m_cellData[row - 1][col - 1]->isShip());
+                boolSum += static_cast<int>(m_cellData[row][col - 1]->isShip());
+            }
+
+            if (col + length + 1 < 10)
+            {
+                boolSum += static_cast<int>(m_cellData[row - 1][col + length + 1]->isShip());
+                boolSum += static_cast<int>(m_cellData[row][col + length + 1]->isShip());
+            }
+        }
+
+        if (row + 1 < 10)
+        {
+            for (std::size_t index{ 0 }; index <= length; ++index)
+                boolSum += static_cast<int>(m_cellData[row + 1][col + index]->isShip());
+
+            if (col - 1 >= 0)
+                boolSum += static_cast<int>(m_cellData[row + 1][col - 1]->isShip());
+
+            if (col + length + 1 < 10)
+                boolSum += static_cast<int>(m_cellData[row + 1][col + length + 1]->isShip());
+        }
+
+        for (std::size_t index{ 0 }; index <= length; ++index)
+            boolSum += static_cast<int>(m_cellData[row][col + index]->isShip());
+
+        return static_cast<bool>(boolSum);
+    }
+    default:
+        return true;
+    }
+}
+
+bool Field::isTooLong(const int row, const int col) const
+{
+    switch (m_addOrientation)
+    {
+    case AddOrientation::Vertical:
+        return row + static_cast<int>(m_addMode) >= 10;
+    case AddOrientation::Horizontal:
+        return col + static_cast<int>(m_addMode) >= 10;
+    default:
+        return true;
+    }
+}
+
+bool Field::shipsCompletelyCreated() const
+{
+    return m_shipsLeft[static_cast<int>(AddMode::Ship1)] == 4
+        && m_shipsLeft[static_cast<int>(AddMode::Ship2)] == 3
+        && m_shipsLeft[static_cast<int>(AddMode::Ship3)] == 2
+        && m_shipsLeft[static_cast<int>(AddMode::Ship4)] == 1;
+}
+
+void Field::endPrepare()
+{
+    m_stage = Stage::Game;
+    hideShipButtons();
+}
+
+bool Field::isPrepare() const
+{
+    return m_stage == Stage::Prepare;
+}
+
+bool Field::isGame() const
+{
+    return m_stage == Stage::Game;
+}
+
+void Field::switchOff()
+{
+    m_addMode = AddMode::NoMode;
+    m_shotMode = ShotMode::NoMode;
+}
+
+void Field::switchOn()
+{
+    m_shotMode = ShotMode::Shot;
 }

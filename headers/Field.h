@@ -16,12 +16,11 @@ class Field final : public QWidget
     Q_OBJECT
 
 public:
-    enum class GameStage
+    enum class Stage
     {
-        Settings,
+        Prepare,
         Game,
     };
-
     enum class Owner
     {
         Player,
@@ -30,11 +29,17 @@ public:
 
     enum class AddMode
     {
+        Ship1,
+        Ship2,
+        Ship3,
+        Ship4,
         NoMode,
-        Ship1 = 1,
-        Ship2 = 2,
-        Ship3 = 3,
-        Ship4 = 4,
+    };
+
+    enum class ShotMode
+    {
+        Shot,
+        NoMode,
     };
 
     enum class AddOrientation
@@ -60,12 +65,30 @@ public:
 
     void hideShipButtons() const;
 
+    [[nodiscard]] bool shipsCompletelyCreated() const;
+
+    void endPrepare();
+
+    [[nodiscard]] bool isPrepare() const;
+
+    [[nodiscard]] bool isGame() const;
+
+    void switchOff();
+
+    void switchOn();
+
+protected:
     [[nodiscard]] bool isTooManyShips() const;
 
+    [[nodiscard]] bool isShipNear(const int row, const int col) const;
+
+    [[nodiscard]] bool isTooLong(const int row, const int col) const;
+
 private:
+    Stage m_stage{};
     Owner m_owner{};
-    GameStage m_gameStage{ GameStage::Settings };
-    AddMode m_addMode{ AddMode::NoMode };
+    AddMode m_addMode{};
+    ShotMode m_shotMode{};
     AddOrientation m_addOrientation{ AddOrientation::Vertical };
     Cell* m_cellData[10][10]{};
     std::array<int, 4> m_shipsLeft{ 0, 0, 0, 0 };
