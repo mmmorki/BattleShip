@@ -4,7 +4,8 @@
 #include <QMainWindow>
 #include <QMessageBox>
 
-class Field;
+class PlayerField;
+class OpponentField;
 
 class QGridLayout;
 class QStackedWidget;
@@ -51,12 +52,12 @@ private:
     QVBoxLayout* m_hostOrClientPageLayout{ nullptr };
     QPushButton* m_chooseHostBtn{ nullptr };
     QPushButton* m_chooseClientBtn{ nullptr };
-    Field* m_firstPlayerField{ nullptr };
-    Field* m_firstPlayerHiddenField{ nullptr };
+    PlayerField* m_firstPlayerField{ nullptr };
+    OpponentField* m_firstPlayerHiddenField{ nullptr };
     QWidget* m_firstPlayerGamePage{ nullptr };
     QGridLayout* m_firstPlayerGamePageLayout{ nullptr };
-    Field* m_secondPlayerField{ nullptr };
-    Field* m_secondPlayerHiddenField{ nullptr };
+    PlayerField* m_secondPlayerField{ nullptr };
+    OpponentField* m_secondPlayerHiddenField{ nullptr };
     QWidget* m_secondPlayerGamePage{ nullptr };
     QGridLayout* m_secondPlayerGamePageLayout{ nullptr };
     QWidget* m_changePlayerPage{ nullptr };

@@ -10,12 +10,14 @@ class Cell final : public QPushButton
 public: signals:
     void enterCellSignal(int row, int col);
     void leaveCellSignal(int row, int col);
-    void clickSignal(int row, int col);
+    void clickCellSignal(int row, int col);
 
 public:
     explicit Cell(int row, int col, QWidget* parent = nullptr);
 
     ~Cell() override = default;
+
+    std::pair<int, int> getRowCol() const;
 
     void setPreview();
 
@@ -23,7 +25,15 @@ public:
 
     void addShip();
 
+    void hideCell();
+
     void removeShip();
+
+    void setDestroyed();
+
+    void setDamaged();
+
+    void setMissed();
 
     [[nodiscard]] bool isShip() const;
 
@@ -33,6 +43,12 @@ public:
 
     void deleteNextCellShipPtr();
 
+    [[nodiscard]] bool isChecked() const;
+
+    std::pair<int, int> getRowAndCol() const;
+
+    void clear();
+
 protected:
     void enterEvent(QEnterEvent* event) override;
 
@@ -41,7 +57,8 @@ protected:
 private:
     int m_row{};
     int m_col{};
-    bool m_isShip{ false };
+    bool m_isShip{};
+    bool m_isChecked{};
     QString* m_currentStyle{ nullptr };
     Cell* m_nextShipCellPtr{ nullptr };
 };

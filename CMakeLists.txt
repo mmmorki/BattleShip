@@ -19,13 +19,18 @@ add_executable(BattleShip source/main.cpp
         source/MainWindow.cpp
         source/Server.cpp
         source/Field.cpp
+        source/OpponentField.cpp
+        source/PlayerField.cpp
         source/Cell.cpp
         headers/Cell.h
         headers/Field.h
+        headers/OpponentField.h
+        headers/PlayerField.h
         headers/MainWindow.h
         headers/Server.h)
 
-target_include_directories(BattleShip PRIVATE headers)
+target_include_directories(BattleShip PRIVATE
+        headers)
 
 target_link_libraries(BattleShip
         Qt::Core

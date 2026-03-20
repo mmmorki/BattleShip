@@ -4,13 +4,20 @@ Cell::Cell(const int row, const int col, QWidget* parent)
     : QPushButton(parent)
     , m_row{ row }
     , m_col{ col }
+    , m_isShip{ false }
+    , m_isChecked{ false }
 {
     m_currentStyle = new QString{ "background-color: white; border: 1px solid black" };
     setFixedSize(40, 40);
     setStyleSheet(*m_currentStyle);
 
     QObject::connect(this, &QPushButton::clicked,
-        [this](){ emit clickSignal(m_row, m_col); });
+        [this](){ emit clickCellSignal(m_row, m_col); });
+}
+
+std::pair<int, int> Cell::getRowCol() const
+{
+    return std::make_pair(m_row, m_col);
 }
 
 void Cell::setPreview()
@@ -31,6 +38,13 @@ void Cell::addShip()
     m_isShip = true;
 }
 
+void Cell::hideCell()
+{
+    m_currentStyle->clear();
+    m_currentStyle->append("background-color: white; border: 1px solid black");
+    setStyleSheet(*m_currentStyle);
+}
+
 void Cell::removeShip()
 {
     m_currentStyle->clear();
@@ -39,9 +53,37 @@ void Cell::removeShip()
     m_isShip = false;
 }
 
+void Cell::setDestroyed()
+{
+    m_currentStyle->clear();
+    m_currentStyle->append("background-color: green; border: 1px solid black");
+    setStyleSheet(*m_currentStyle);
+}
+
+void Cell::setDamaged()
+{
+    m_currentStyle->clear();
+    m_currentStyle->append("background-color: orange; border: 1px solid black");
+    setStyleSheet(*m_currentStyle);
+    m_isChecked = true;
+}
+
+void Cell::setMissed()
+{
+    m_currentStyle->clear();
+    m_currentStyle->append("background-color: red; border: 1px solid black");
+    setStyleSheet(*m_currentStyle);
+    m_isChecked = true;
+}
+
 bool Cell::isShip() const
 {
     return m_isShip;
+}
+
+bool Cell::isChecked() const
+{
+    return m_isChecked;
 }
 
 void Cell::link(Cell* nextShipCellPtr)
@@ -56,6 +98,18 @@ Cell* Cell::getNextShipCellPtr() const
 
 void Cell::deleteNextCellShipPtr()
 {
+    m_nextShipCellPtr = nullptr;
+}
+
+std::pair<int, int> Cell::getRowAndCol() const
+{
+    return std::make_pair(m_row, m_col);
+}
+
+void Cell::clear()
+{
+    removeShip();
+    m_isChecked = false;
     m_nextShipCellPtr = nullptr;
 }
 
