@@ -17,14 +17,18 @@ class QMessageBox;
 
 class MainWindow final : public QMainWindow
 {
+    Q_OBJECT
+
+private slots:
+    void shotsAreOverSlot();
+
 public:
     enum class Page
     {
         Main,
         ChooseHostOrClient,
-        FirstPlayerGame,
-        SecondPlayerGame,
-        ChangePlayer,
+        Prepare,
+        Game,
     };
 
     enum class GameVariant
@@ -34,13 +38,20 @@ public:
         Online,
     };
 
+    enum class Turn
+    {
+        None,
+        Player1,
+        Player2,
+    };
+
     explicit MainWindow();
 
     ~MainWindow() override = default;
 
 private:
     GameVariant m_gameVariant{ GameVariant::None };
-    Page m_currentPlayerPage{ Page::FirstPlayerGame };
+    Turn m_turn{ Turn::None };
     QWidget* m_central{ nullptr };
     QGridLayout* m_centralLayout{ nullptr };
     QStackedWidget* m_centralStack{ nullptr };
@@ -54,19 +65,14 @@ private:
     QPushButton* m_chooseClientBtn{ nullptr };
     PlayerField* m_firstPlayerField{ nullptr };
     OpponentField* m_firstPlayerHiddenField{ nullptr };
-    QWidget* m_firstPlayerGamePage{ nullptr };
-    QGridLayout* m_firstPlayerGamePageLayout{ nullptr };
     PlayerField* m_secondPlayerField{ nullptr };
     OpponentField* m_secondPlayerHiddenField{ nullptr };
-    QWidget* m_secondPlayerGamePage{ nullptr };
-    QGridLayout* m_secondPlayerGamePageLayout{ nullptr };
-    QWidget* m_changePlayerPage{ nullptr };
-    QHBoxLayout* m_changePlayerPageLayout{ nullptr };
-    QPushButton* m_changePlayerBtn{ nullptr };
     QPushButton* m_fromHostOrOnlineToMainBtn{ nullptr };
-    QLabel* m_opponentIsReadyLabel{ nullptr };
-    QPushButton* m_firstPlayerReadyBtn{ nullptr };
-    QPushButton* m_secondPlayerReadyBtn{ nullptr };
+    QWidget* m_preparePage{ nullptr };
+    QGridLayout* m_preparePageLayout{ nullptr };
+    QPushButton* m_readyBtn{ nullptr };
+    QWidget* m_gamePage{ nullptr };
+    QGridLayout* m_gamePageLayout{ nullptr };
 };
 
 #endif //MAINWINDOW_H

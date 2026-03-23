@@ -68,7 +68,7 @@ void OpponentField::clickCellSlot(const int row, const int col)
 
 OpponentField::OpponentField(QWidget* parent)
     : Field(parent)
-    , m_canShot{ true }
+    , m_canShot{ false }
     , m_shipCellsLeft{ 20 }
 {
 }

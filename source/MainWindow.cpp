@@ -8,6 +8,11 @@
 #include <QLabel>
 #include <QMessageBox>
 
+void MainWindow::shotsAreOverSlot()
+{
+
+}
+
 MainWindow::MainWindow()
     : m_central{ new QWidget{ this } }
     , m_centralLayout{ new QGridLayout{ m_central } }
@@ -22,19 +27,14 @@ MainWindow::MainWindow()
     , m_chooseClientBtn{ new QPushButton{ "Подключиться", this } }
     , m_firstPlayerField{ new PlayerField{ this } }
     , m_firstPlayerHiddenField{ new OpponentField{ this } }
-    , m_firstPlayerGamePage{ new QWidget{ this } }
-    , m_firstPlayerGamePageLayout{ new QGridLayout{ m_firstPlayerGamePage } }
     , m_secondPlayerField{ new PlayerField{ this } }
     , m_secondPlayerHiddenField{ new OpponentField{ this } }
-    , m_secondPlayerGamePage{ new QWidget{ this } }
-    , m_secondPlayerGamePageLayout{ new QGridLayout{ m_secondPlayerGamePage } }
-    , m_changePlayerPage{ new QWidget{ this } }
-    , m_changePlayerPageLayout{ new QHBoxLayout{ this } }
-    , m_changePlayerBtn{ new QPushButton{ "Сменить игрока", this } }
     , m_fromHostOrOnlineToMainBtn{ new QPushButton{ "Назад", this } }
-    , m_opponentIsReadyLabel{ new QLabel{ "Противник не готов", this } }
-    , m_firstPlayerReadyBtn{ new QPushButton{ "Готов", this  } }
-    , m_secondPlayerReadyBtn{ new QPushButton{ "Готов", this } }
+    , m_preparePage{ new QWidget{ this } }
+    , m_preparePageLayout{ new QGridLayout{ m_preparePage } }
+    , m_readyBtn{ new QPushButton{ "Готов", this } }
+    , m_gamePage{ new QWidget{ this } }
+    , m_gamePageLayout{ new QGridLayout{ m_gamePage } }
 {
     //Настройка окна
     setFixedSize(1000, 500);
@@ -56,47 +56,45 @@ MainWindow::MainWindow()
     m_hostOrClientPageLayout->insertWidget(1, m_chooseClientBtn);
     m_hostOrClientPageLayout->insertWidget(2, m_fromHostOrOnlineToMainBtn);
 
-    //Настройка m_firstPlayerGamePage
-    m_centralStack->insertWidget(2, m_firstPlayerGamePage);
-    m_firstPlayerGamePage->setLayout(m_firstPlayerGamePageLayout);
-    m_firstPlayerGamePageLayout->addWidget(m_opponentIsReadyLabel, 0, 0, 1, 2);
-    m_firstPlayerGamePageLayout->addWidget(m_firstPlayerField, 1, 0, 1, 1);
-    m_firstPlayerGamePageLayout->addWidget(m_firstPlayerHiddenField, 1, 1, 1, 1);
-    m_firstPlayerGamePageLayout->addWidget(m_firstPlayerReadyBtn, 2, 0, 1, 2);
-    m_opponentIsReadyLabel->setAlignment(Qt::AlignCenter);
+    //Настройка m_preparePage
+    m_centralStack->insertWidget(2, m_preparePage);
+    m_preparePage->setLayout(m_preparePageLayout);
+    m_preparePageLayout->addWidget(m_firstPlayerField, 0, 0, 1, 1);
+    m_preparePageLayout->addWidget(m_secondPlayerField, 0, 1, 1, 1);
+    m_preparePageLayout->addWidget(m_readyBtn, 1, 0, 1, 2);
+    QSizePolicy firstFieldPolicy{ m_firstPlayerField->sizePolicy() };
+    firstFieldPolicy.setRetainSizeWhenHidden(true);
+    m_firstPlayerField->setSizePolicy(firstFieldPolicy);
+    QSizePolicy secondFieldPolicy{ m_secondPlayerField->sizePolicy() };
+    secondFieldPolicy.setRetainSizeWhenHidden(true);
+    m_secondPlayerField->setSizePolicy(secondFieldPolicy);
 
-    //Настройка m_secondPlayerGamePage
-    m_centralStack->insertWidget(3, m_secondPlayerGamePage);
-    m_secondPlayerGamePage->setLayout(m_secondPlayerGamePageLayout);
-    m_secondPlayerGamePageLayout->addWidget(m_secondPlayerField, 1, 0, 1, 1);
-    m_secondPlayerGamePageLayout->addWidget(m_secondPlayerHiddenField, 1, 1, 1, 1);
-    m_secondPlayerGamePageLayout->addWidget(m_secondPlayerReadyBtn, 2, 0, 1, 2);
+    //Настройка m_gamePage
+    m_centralStack->insertWidget(3, m_gamePage);
+    m_gamePage->setLayout(m_gamePageLayout);
+    m_gamePageLayout->addWidget(m_firstPlayerHiddenField, 0, 0, 1, 1);
+    m_gamePageLayout->addWidget(m_secondPlayerHiddenField, 0, 1, 1, 1);
 
-    //Подключение пользовательских и скрытых полей
-    m_firstPlayerField->connectSignalsFromHiddenField(m_secondPlayerHiddenField);
-    m_secondPlayerField->connectSignalsFromHiddenField(m_firstPlayerHiddenField);
 
-    //Настройка m_changePlayerPage
-    m_centralStack->insertWidget(4, m_changePlayerPage);
-    m_changePlayerPage->setLayout(m_changePlayerPageLayout);
-    m_changePlayerPageLayout->insertWidget(0, m_changePlayerBtn);
-
+    //Подключения кнопки выбора локального режима игры и лямбда для неё
     auto chooseLocalBtnLambda{
         [this] {
-            m_centralStack->setCurrentIndex(static_cast<int>(Page::FirstPlayerGame));
-            setWindowTitle("Морской бой -> Локальная игра -> Player1");
+            m_centralStack->setCurrentIndex(static_cast<int>(Page::Prepare));
+            setWindowTitle("Морской бой -> Локальная игра -> Расстановка");
             m_gameVariant = GameVariant::Local;
-
-            m_opponentIsReadyLabel->hide();
 
             m_firstPlayerField->startPrepare();
             m_firstPlayerHiddenField->startPrepare();
             m_secondPlayerField->startPrepare();
             m_secondPlayerHiddenField->startPrepare();
+
+            m_turn = Turn::Player1;
+            m_secondPlayerField->hide();
         }
     };
-    QObject::connect(m_chooseLocalBtn, &QPushButton::clicked, chooseLocalBtnLambda);
+    connect(m_chooseLocalBtn, &QPushButton::clicked, chooseLocalBtnLambda);
 
+    //Подключение кнопки выбора режима игры по сети и лямбда для неё
     auto chooseOnlineBtnLambda{
         [this] {
             m_centralStack->setCurrentIndex(
@@ -105,8 +103,10 @@ MainWindow::MainWindow()
             m_gameVariant = GameVariant::Online;
         }
     };
-    QObject::connect(m_chooseOnlineBtn, &QPushButton::clicked, chooseOnlineBtnLambda);
+    connect(m_chooseOnlineBtn, &QPushButton::clicked, chooseOnlineBtnLambda);
 
+    //Подключение кнопки возврата в главное меню из страницы выбора типа игры по
+    //сети и лямбда для неё
     auto fromHostOrOnlineToMainBtnLambda{
         [this] {
             m_centralStack->setCurrentIndex(
@@ -115,110 +115,51 @@ MainWindow::MainWindow()
             m_gameVariant = GameVariant::None;
         }
     };
-    QObject::connect(m_fromHostOrOnlineToMainBtn, &QPushButton::clicked, fromHostOrOnlineToMainBtnLambda);
+    connect(m_fromHostOrOnlineToMainBtn, &QPushButton::clicked,
+        fromHostOrOnlineToMainBtnLambda);
 
+    //Подключение кнопки завершения расстановки кораблей и лямбда для неё
     auto readyBtnLambda{
         [this] {
-            if (m_currentPlayerPage == Page::FirstPlayerGame
-                && m_firstPlayerField->isPrepare())
+            switch (m_turn)
+            {
+            case Turn::Player1:
             {
                 if (m_firstPlayerField->allShipsCreated())
                 {
-                    m_firstPlayerField->startGame();
-                    m_firstPlayerHiddenField->startGame();
-                    m_firstPlayerField->transferShipsTo(m_secondPlayerHiddenField);
-                    m_centralStack->setCurrentIndex(static_cast<int>(Page::ChangePlayer));
-                    setWindowTitle("Морской бой -> Локальная игра -> Смена игрока");
+                    m_firstPlayerField->hide();
+                    m_secondPlayerField->show();
+                    m_turn = Turn::Player2;
+                    return;
                 }
 
-                else
-                    QMessageBox::warning(this, " ", "Расставьте все корабли");
+                QMessageBox::warning(this, " ", "Расставьте все корабли");
+                return;
             }
-
-            else if (m_currentPlayerPage == Page::SecondPlayerGame
-                && m_secondPlayerField->isPrepare())
+            case Turn::Player2:
             {
                 if (m_secondPlayerField->allShipsCreated())
                 {
+                    m_secondPlayerField->hide();
+                    m_turn = Turn::Player1;
+                    m_centralStack->setCurrentIndex(static_cast<int>(
+                        Page::Game));
+                    m_firstPlayerField->transferShipsTo(m_firstPlayerHiddenField);
+                    m_secondPlayerField->transferShipsTo(m_secondPlayerHiddenField);
+                    m_firstPlayerField->startGame();
                     m_secondPlayerField->startGame();
+                    m_firstPlayerHiddenField->startGame();
                     m_secondPlayerHiddenField->startGame();
-                    m_secondPlayerField->transferShipsTo(m_firstPlayerHiddenField);
-                    m_centralStack->setCurrentIndex(static_cast<int>(Page::ChangePlayer));
-                    setWindowTitle("Морской бой -> Локальная игра -> Смена игрока");
+                    setWindowTitle("Морской бой -> Локальная игра -> Бой");
+
+                    return;
                 }
 
-                else
-                    QMessageBox::warning(this, " ", "Расставьте все корабли");
+                QMessageBox::warning(this, " ", "Расставьте все корабли");
             }
-
-            else if (m_currentPlayerPage == Page::FirstPlayerGame
-                && m_firstPlayerField->isGame())
-            {
-                if (m_firstPlayerHiddenField->allShipsDestroyed())
-                {
-                    QMessageBox::information(this, " ", "Вы победили");
-                    m_centralStack->setCurrentIndex(static_cast<int>(Page::Main));
-                    m_firstPlayerField->clear();
-                    m_firstPlayerHiddenField->clear();
-                    m_secondPlayerField->clear();
-                    m_secondPlayerHiddenField->clear();
-                }
-
-                else if (!m_firstPlayerHiddenField->canShot())
-                {
-                    m_centralStack->setCurrentIndex(static_cast<int>(Page::ChangePlayer));
-                    setWindowTitle("Морской бой -> Локальная игра -> Смена игрока");
-                    m_firstPlayerHiddenField->addShotOpportunity();
-                }
-
-                else
-                    QMessageBox::warning(this, " ", "Сделайте выстрел");
-            }
-
-            else if (m_currentPlayerPage == Page::SecondPlayerGame
-                && m_secondPlayerField->isGame())
-            {
-                if (m_secondPlayerHiddenField->allShipsDestroyed())
-                {
-                    QMessageBox::information(this, " ", "Вы победили");
-                    m_centralStack->setCurrentIndex(static_cast<int>(Page::Main));
-                    m_firstPlayerField->clear();
-                    m_firstPlayerHiddenField->clear();
-                    m_secondPlayerField->clear();
-                    m_secondPlayerHiddenField->clear();
-                }
-
-                else if (!m_secondPlayerHiddenField->canShot())
-                {
-                    m_centralStack->setCurrentIndex(static_cast<int>(Page::ChangePlayer));
-                    setWindowTitle("Морской бой -> Локальная игра -> Смена игрока");
-                    m_secondPlayerHiddenField->addShotOpportunity();
-                }
-
-                else
-                    QMessageBox::warning(this, " ", "Сделайте выстрел");
+            default: return;
             }
         }
     };
-    QObject::connect(m_firstPlayerReadyBtn, &QPushButton::clicked, readyBtnLambda);
-    QObject::connect(m_secondPlayerReadyBtn, &QPushButton::clicked, readyBtnLambda);
-
-    auto changePlayerBtnLambda{
-        [this] {
-            if (m_currentPlayerPage == Page::FirstPlayerGame)
-            {
-                m_centralStack->setCurrentIndex(static_cast<int>(Page::SecondPlayerGame));
-                m_currentPlayerPage = Page::SecondPlayerGame;
-                setWindowTitle("Морской бой -> Локальная игра -> Player2");
-            }
-
-            else if (m_currentPlayerPage == Page::SecondPlayerGame)
-            {
-                m_centralStack->setCurrentIndex(static_cast<int>(Page::FirstPlayerGame));
-                m_currentPlayerPage = Page::FirstPlayerGame;
-                setWindowTitle("Морской бой -> Локальная игра -> Player1");
-            }
-        }
-    };
-    QObject::connect(m_changePlayerBtn, &QPushButton::clicked, changePlayerBtnLambda);
+    connect(m_readyBtn, &QPushButton::clicked, readyBtnLambda);
 }
