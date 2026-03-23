@@ -3,23 +3,21 @@
 
 void OpponentField::enterCellSlot(const int row, const int col)
 {
-    if (m_stage == Stage::Prepare || m_stage == Stage::None ||
-        !m_canShot || m_cellData[row][col]->isChecked()) return;
+    if (!m_canShot || m_cellData[row][col]->isChecked()) return;
 
     m_cellData[row][col]->setPreview();
 }
 
 void OpponentField::leaveCellSlot(const int row, const int col)
 {
-    if (m_stage == Stage::Prepare || !m_canShot) return;
+    if (!m_canShot) return;
 
     m_cellData[row][col]->cancelPreview();
 }
 
 void OpponentField::clickCellSlot(const int row, const int col)
 {
-    if (m_stage == Stage::Prepare || m_stage == Stage::None ||
-        !m_canShot || m_cellData[row][col]->isChecked()) return;
+    if (!m_canShot || m_cellData[row][col]->isChecked()) return;
 
     if (m_cellData[row][col]->isShip())
     {
@@ -62,8 +60,12 @@ void OpponentField::clickCellSlot(const int row, const int col)
     {
         m_cellData[row][col]->setMissed();
         emit missShipFromHiddenSignal(row, col);
+        emit shotsAreOverSignal();
         m_canShot = false;
     }
+
+    if (m_shipCellsLeft == 0)
+        emit allShipsAreDestroyedSignal();
 }
 
 OpponentField::OpponentField(QWidget* parent)
@@ -71,11 +73,6 @@ OpponentField::OpponentField(QWidget* parent)
     , m_canShot{ false }
     , m_shipCellsLeft{ 20 }
 {
-}
-
-void OpponentField::startGame()
-{
-    m_stage = Stage::Game;
 }
 
 bool OpponentField::allShipsDestroyed() const
@@ -189,5 +186,9 @@ void OpponentField::clear()
 
     addShotOpportunity();
     m_shipCellsLeft = 20;
-    startPrepare();
+}
+
+void OpponentField::activate()
+{
+    m_canShot = true;
 }

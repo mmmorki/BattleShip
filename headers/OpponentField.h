@@ -17,8 +17,6 @@ private slots:
 public:
     explicit OpponentField(QWidget* parent = nullptr);
 
-    void startGame() override;
-
     [[nodiscard]] bool allShipsDestroyed() const;
 
     [[nodiscard]] bool canShot() const;
@@ -29,10 +27,14 @@ public:
 
     void clear() override;
 
+    void activate();
+
 public: signals:
     void missShipFromHiddenSignal(const int row, const int col);
     void damageShipFromHiddenSignal(const int row, const int col);
     void destroyShipFromHiddenSignal(const int row, const int col);
+    void shotsAreOverSignal();
+    void allShipsAreDestroyedSignal();
 
 private:
     bool m_canShot{};

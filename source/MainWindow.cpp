@@ -10,7 +10,42 @@
 
 void MainWindow::shotsAreOverSlot()
 {
+    switch (m_turn)
+    {
+        case Turn::Player1:
+        {
+            m_firstPlayerHiddenField->activate();
+            m_turn = Turn::Player2;
+            return;
+        }
+        case Turn::Player2:
+            m_secondPlayerHiddenField->activate();
+            m_turn = Turn::Player1;
+            return;
+        default: return;
+    }
+}
 
+void MainWindow::allShipsAreDestroyedSlot()
+{
+    switch (m_turn)
+    {
+        case Turn::Player1:
+        {
+            QMessageBox::information(this, " ", "Player1 выиграл");
+            break;
+        }
+        case Turn::Player2:
+            QMessageBox::information(this, " ", "Player2 выиграл");
+        default: break;
+    }
+
+    m_centralStack->setCurrentIndex(static_cast<int>(Page::Main));
+
+    m_firstPlayerField->clear();
+    m_secondPlayerField->clear();
+    m_firstPlayerHiddenField->clear();
+    m_secondPlayerHiddenField->clear();
 }
 
 MainWindow::MainWindow()
@@ -83,12 +118,8 @@ MainWindow::MainWindow()
             setWindowTitle("Морской бой -> Локальная игра -> Расстановка");
             m_gameVariant = GameVariant::Local;
 
-            m_firstPlayerField->startPrepare();
-            m_firstPlayerHiddenField->startPrepare();
-            m_secondPlayerField->startPrepare();
-            m_secondPlayerHiddenField->startPrepare();
-
             m_turn = Turn::Player1;
+            m_firstPlayerField->show();
             m_secondPlayerField->hide();
         }
     };
@@ -142,15 +173,7 @@ MainWindow::MainWindow()
                 {
                     m_secondPlayerField->hide();
                     m_turn = Turn::Player1;
-                    m_centralStack->setCurrentIndex(static_cast<int>(
-                        Page::Game));
-                    m_firstPlayerField->transferShipsTo(m_firstPlayerHiddenField);
-                    m_secondPlayerField->transferShipsTo(m_secondPlayerHiddenField);
-                    m_firstPlayerField->startGame();
-                    m_secondPlayerField->startGame();
-                    m_firstPlayerHiddenField->startGame();
-                    m_secondPlayerHiddenField->startGame();
-                    setWindowTitle("Морской бой -> Локальная игра -> Бой");
+                    startGame();
 
                     return;
                 }
@@ -162,4 +185,23 @@ MainWindow::MainWindow()
         }
     };
     connect(m_readyBtn, &QPushButton::clicked, readyBtnLambda);
+
+    connect(m_firstPlayerHiddenField, &OpponentField::shotsAreOverSignal,
+        this, &MainWindow::shotsAreOverSlot);
+    connect(m_secondPlayerHiddenField, &OpponentField::shotsAreOverSignal,
+        this, &MainWindow::shotsAreOverSlot);
+    connect(m_firstPlayerHiddenField, &OpponentField::allShipsAreDestroyedSignal,
+        this, &MainWindow::allShipsAreDestroyedSlot);
+    connect(m_secondPlayerHiddenField, &OpponentField::allShipsAreDestroyedSignal,
+        this, &MainWindow::allShipsAreDestroyedSlot);
+}
+
+void MainWindow::startGame()
+{
+    m_centralStack->setCurrentIndex(static_cast<int>(
+                        Page::Game));
+    m_firstPlayerField->transferShipsTo(m_firstPlayerHiddenField);
+    m_secondPlayerField->transferShipsTo(m_secondPlayerHiddenField);
+    m_secondPlayerHiddenField->activate();
+    setWindowTitle("Морской бой -> Локальная игра -> Бой");
 }

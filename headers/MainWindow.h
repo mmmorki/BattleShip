@@ -21,6 +21,7 @@ class MainWindow final : public QMainWindow
 
 private slots:
     void shotsAreOverSlot();
+    void allShipsAreDestroyedSlot();
 
 public:
     enum class Page
@@ -48,6 +49,8 @@ public:
     explicit MainWindow();
 
     ~MainWindow() override = default;
+
+    void startGame();
 
 private:
     GameVariant m_gameVariant{ GameVariant::None };

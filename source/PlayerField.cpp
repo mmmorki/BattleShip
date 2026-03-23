@@ -8,8 +8,7 @@
 void PlayerField::enterCellSlot(const int row, const int col)
 {
     if (m_addMode == AddMode::None || isTooManyShips()
-        || isTooLong(row, col) || isShipNear(row, col)
-        || m_stage == Stage::Game || m_stage == Stage::None) return;
+        || isTooLong(row, col) || isShipNear(row, col)) return;
 
     const int length{ static_cast<int>(m_addMode) };
 
@@ -24,8 +23,6 @@ void PlayerField::enterCellSlot(const int row, const int col)
 
 void PlayerField::leaveCellSlot(const int row, const int col)
 {
-    if (m_stage == Stage::Game || m_stage == Stage::None) return;
-
     for (std::size_t index{ 0 }; index < 4; ++index)
     {
         if (row + index < 10)
@@ -37,8 +34,6 @@ void PlayerField::leaveCellSlot(const int row, const int col)
 
 void PlayerField::clickCellSlot(const int row, const int col)
     {
-        if (m_stage == Stage::Game || m_stage == Stage::None) return;
-
         if (m_cellData[row][col]->isShip())
         {
             int removedShipCellsCounter{ 0 };
@@ -335,13 +330,6 @@ bool PlayerField::allShipsCreated() const
         && m_shipsLeft[static_cast<int>(AddMode::Ship4)] == 1;
 }
 
-void PlayerField::startGame()
-{
-    m_stage = Stage::Game;
-    hideShipButtons();
-    //hideShips();
-}
-
 void PlayerField::clear()
 {
     for (std::size_t row{ 0 }; row < 10; ++row)
@@ -353,7 +341,6 @@ void PlayerField::clear()
     m_shipsLeft = { 0, 0, 0, 0 };
 
     showShipButtons();
-    startPrepare();
 }
 
 void PlayerField::hideShips() const

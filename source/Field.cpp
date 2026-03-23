@@ -30,21 +30,6 @@ Field::Field(QWidget* parent)
         }
 }
 
-bool Field::isPrepare() const
-{
-    return m_stage == Stage::Prepare;
-}
-
-void Field::startPrepare()
-{
-    m_stage = Stage::Prepare;
-}
-
-bool Field::isGame() const
-{
-    return m_stage == Stage::Game;
-}
-
 void Field::transferShipsTo(const Field* other) const
 {
     for (std::size_t row{ 0 }; row < 10; ++row)

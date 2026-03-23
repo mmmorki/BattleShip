@@ -58,8 +58,6 @@ public:
 
     [[nodiscard]] bool allShipsCreated() const;
 
-    void startGame() override;
-
     void clear() override;
 
     void hideShips() const;
