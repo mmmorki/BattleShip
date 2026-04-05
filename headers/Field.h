@@ -7,6 +7,8 @@ class QGridLayout;
 
 #include <QWidget>
 
+#include <vector>
+
 class Field : public QWidget
 {
     Q_OBJECT
@@ -24,6 +26,8 @@ public:
     void transferShipsTo(const Field* other) const;
 
     virtual void clear() = 0;
+
+    void bindShips(std::vector<std::pair<int, int>>& vector) const;
 
 protected:
     Cell* m_cellData[10][10]{};

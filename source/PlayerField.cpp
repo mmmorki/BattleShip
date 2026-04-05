@@ -5,6 +5,8 @@
 #include <QGridLayout>
 #include <QHBoxLayout>
 
+#include <array>
+
 void PlayerField::enterCellSlot(const int row, const int col)
 {
     if (m_addMode == AddMode::None || isTooManyShips()
@@ -33,84 +35,74 @@ void PlayerField::leaveCellSlot(const int row, const int col)
 }
 
 void PlayerField::clickCellSlot(const int row, const int col)
+{
+    if (m_cellData[row][col]->isShip())
     {
-        if (m_cellData[row][col]->isShip())
+        int removedShipCellsCounter{ 0 };
+        Cell* currentCell{ m_cellData[row][col]->getNextShipCellPtr() };
+        m_cellData[row][col]->deleteNextCellShipPtr();
+
+        while (currentCell != nullptr)
         {
-            int removedShipCellsCounter{ 0 };
-            Cell* currentCell{ m_cellData[row][col]->getNextShipCellPtr() };
-            m_cellData[row][col]->deleteNextCellShipPtr();
-
-            while (currentCell != nullptr)
-            {
-                currentCell->removeShip();
-                ++removedShipCellsCounter;
-                Cell* previousCell{ currentCell };
-                currentCell = currentCell->getNextShipCellPtr();
-                previousCell->deleteNextCellShipPtr();
-            }
-
-            --m_shipsLeft[removedShipCellsCounter - 1];
-
-            return;
+            currentCell->removeShip();
+            std::pair<int, int> coordinates{ currentCell->getRowAndCol() };
+            emit playerRemoveAShipSignal(coordinates.first, coordinates.second);
+            ++removedShipCellsCounter;
+            Cell* previousCell{ currentCell };
+            currentCell = currentCell->getNextShipCellPtr();
+            previousCell->deleteNextCellShipPtr();
         }
 
-        if (m_addMode == AddMode::None || isTooManyShips()
-            || isTooLong(row, col) || isShipNear(row, col)) return;
+        --m_shipsLeft[removedShipCellsCounter - 1];
 
-        const int length{ static_cast<int>(m_addMode) };
+        return;
+    }
 
-        if (m_addOrientation == AddOrientation::Vertical)
+    if (m_addMode == AddMode::None || isTooManyShips()
+        || isTooLong(row, col) || isShipNear(row, col)) return;
+
+    const int length{ static_cast<int>(m_addMode) };
+    std::vector<Cell*> cells{};
+
+    if (m_addOrientation == AddOrientation::Vertical)
+    {
+        Cell* previousCell{ nullptr };
+        ++m_shipsLeft[static_cast<int>(m_addMode)];
+
+        for (std::size_t index{ 0 }; index <= length; ++index)
         {
-            Cell* previousCell{ nullptr };
-            ++m_shipsLeft[static_cast<int>(m_addMode)];
+            Cell* currentCell{ m_cellData[row + index][col] };
 
-            for (std::size_t index{ 0 }; index <= length; ++index)
-            {
-                Cell* currentCell{ m_cellData[row + index][col] };
+            if (index > 0 && previousCell) previousCell->link(currentCell);
 
-                if (index > 0 && previousCell) previousCell->link(currentCell);
+            if (index == length)
+                currentCell->link(m_cellData[row][col]);
 
-                if (index == length)
-                    currentCell->link(m_cellData[row][col]);
-
-                currentCell->addShip();
-                previousCell = currentCell;
-            }
-        }
-
-        else if (m_addOrientation == AddOrientation::Horizontal)
-        {
-            Cell* previousCell{ nullptr };
-            ++m_shipsLeft[static_cast<int>(m_addMode)];
-
-            for (std::size_t index{ 0 }; index <= length; ++index)
-            {
-                Cell* currentCell{ m_cellData[row][col + index] };
-
-                if (index > 0 && previousCell) previousCell->link(currentCell);
-
-                if (index == length)
-                    currentCell->link(m_cellData[row][col]);
-
-                currentCell->addShip();
-                previousCell = currentCell;
-            }
+            currentCell->addShip();
+            previousCell = currentCell;
+            emit playerCreateAShipSignal(row + index, col);
         }
     }
 
-void PlayerField::missShipFromHiddenSlot(const int row, const int col)
-{
-    m_cellData[row][col]->setMissed();
-}
+    else if (m_addOrientation == AddOrientation::Horizontal)
+    {
+        Cell* previousCell{ nullptr };
+        ++m_shipsLeft[static_cast<int>(m_addMode)];
 
-void PlayerField::damageShipFromHiddenSlot(const int row, const int col)
-{
-    m_cellData[row][col]->setDamaged();
-}
+        for (std::size_t index{ 0 }; index <= length; ++index)
+        {
+            Cell* currentCell{ m_cellData[row][col + index] };
 
-void PlayerField::destroyShipFromHiddenSlot(const int row, const int col)
-{
-    m_cellData[row][col]->setDestroyed();
+            if (index > 0 && previousCell) previousCell->link(currentCell);
+
+            if (index == length)
+                currentCell->link(m_cellData[row][col]);
+
+            currentCell->addShip();
+            previousCell = currentCell;
+            emit playerCreateAShipSignal(row, col + index);
+        }
+    }
 }
 
 PlayerField::PlayerField(QWidget* parent)
@@ -353,6 +345,7 @@ void PlayerField::hideShips() const
         }
 }
 
+/*
 void PlayerField::connectSignalsFromHiddenField(const OpponentField* field) const
 {
     connect(field, &OpponentField::missShipFromHiddenSignal,
@@ -362,3 +355,4 @@ void PlayerField::connectSignalsFromHiddenField(const OpponentField* field) cons
     connect(field, &OpponentField::destroyShipFromHiddenSignal,
         this, &PlayerField::destroyShipFromHiddenSlot);
 }
+*/

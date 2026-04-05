@@ -6,6 +6,8 @@
 
 class PlayerField;
 class OpponentField;
+class Server;
+class Client;
 
 class QGridLayout;
 class QStackedWidget;
@@ -14,6 +16,7 @@ class QPushButton;
 class QLabel;
 class QHBoxLayout;
 class QMessageBox;
+class QTcpSocket;
 
 class MainWindow final : public QMainWindow
 {
@@ -22,6 +25,10 @@ class MainWindow final : public QMainWindow
 private slots:
     void shotsAreOverSlot();
     void allShipsAreDestroyedSlot();
+    void playerCreateAShipSlot(const int row, const int col);
+    void playerRemoveAShipSlot(const int row, const int col);
+    void dataSlot(const int identifier, const int col, const int row);
+    void playerClickCellSlot(const int row, const int col);
 
 public:
     enum class Page
@@ -30,13 +37,15 @@ public:
         ChooseHostOrClient,
         Prepare,
         Game,
+        Connecting,
     };
 
     enum class GameVariant
     {
         None,
         Local,
-        Online,
+        Server,
+        Client,
     };
 
     enum class Turn
@@ -76,6 +85,12 @@ private:
     QPushButton* m_readyBtn{ nullptr };
     QWidget* m_gamePage{ nullptr };
     QGridLayout* m_gamePageLayout{ nullptr };
+    Client* m_client{ nullptr };
+    Server* m_server{ nullptr };
+    QLabel* m_readyLabel{ nullptr };
+    QWidget* m_connectingPage{ nullptr };
+    QGridLayout* m_connectingPageLayout{ nullptr };
+    QLabel* m_connectingLabel{ nullptr };
 };
 
 #endif //MAINWINDOW_H

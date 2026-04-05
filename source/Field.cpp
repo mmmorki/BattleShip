@@ -52,3 +52,21 @@ void Field::transferShipsTo(const Field* other) const
             }
         }
 }
+
+void Field::bindShips(std::vector<std::pair<int, int>>& vector) const
+{
+    std::vector<Cell*> cells{};
+    std::size_t vectorSize{ vector.size() };
+
+    for (std::size_t index{ 0 }; index < vectorSize; ++index)
+        cells.push_back(m_cellData[vector[index].first][vector[index].second]);
+
+    for (std::size_t index{ 0 }; index < vectorSize; ++index)
+    {
+        if (index == vectorSize - 1)
+            cells[index]->link(cells[0]);
+
+        else
+            cells[index]->link(cells[index + 1]);
+    }
+}

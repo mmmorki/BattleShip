@@ -1,12 +1,11 @@
-#ifndef SERVER_H
-#define SERVER_H
+#ifndef CLIENT_H
+#define CLIENT_H
+
+#include <QTcpSocket>
 
 #include <iostream>
 
-#include <QTcpServer>
-#include <QTcpSocket>
-
-class Server final : public QTcpServer
+class Client final : public QObject
 {
     Q_OBJECT
 
@@ -14,36 +13,29 @@ public: signals:
     void dataSignal(const int identifier, const int row, const int col);
 
 public:
-    explicit Server(QObject* parent = nullptr)
-        : QTcpServer(parent)
+    explicit Client(QObject* parent = nullptr)
+        : QObject(parent)
+        , m_socket{ new QTcpSocket{ this } }
     {
-        this->listen(QHostAddress::Any, 2323);
-        std::cerr << "server listening on port 2323" << std::endl;
+        m_socket->connectToHost("127.0.0.1", 2323);
+
+        connect(m_socket, &QTcpSocket::readyRead, this, &Client::readyReadSlot);
+        connect(m_socket, &QTcpSocket::disconnected, m_socket, &QTcpSocket::deleteLater);
     }
 
-    void send(const int identifier, const int col, const int row)
+    void send(const int identifier, const int row, const int col)
     {
         m_byteArray.clear();
 
         QDataStream out{ &m_byteArray, QIODevice::WriteOnly };
         out.setVersion(QDataStream::Qt_6_10);
 
-        const int num{ identifier * 100 + col * 10 + row };
+        const int num{ identifier * 100 + row * 10 + col };
         out << quint16(0) << num;
         out.device()->seek(0);
         out << quint16(m_byteArray.size() - sizeof(quint16));
 
-        m_client->write(m_byteArray);
-    }
-
-    void incomingConnection(qintptr socketDescriptor) override
-    {
-        m_client = new QTcpSocket{};
-        m_client->setSocketDescriptor(socketDescriptor);
-        connect(m_client, &QTcpSocket::readyRead, this, &Server::readyReadSlot);
-        connect(m_client, &QTcpSocket::disconnected, m_client, &QTcpSocket::deleteLater);
-        std::cerr << "client connected" << std::endl;
-        emit dataSignal(0, 0, 1);
+        m_socket->write(m_byteArray);
     }
 
     [[nodiscard]] bool isReady() const
@@ -59,20 +51,20 @@ public:
 public slots:
     void readyReadSlot()
     {
-        QDataStream in(m_client);
+        QDataStream in{ m_socket };
         in.setVersion(QDataStream::Qt_6_10);
 
         for (;;)
         {
             if (m_nextBlockSize == 0)
             {
-                if (m_client->bytesAvailable() < 2)
+                if (m_socket->bytesAvailable() < 2)
                     break;
 
                 in >> m_nextBlockSize;
             }
 
-            if (m_client->bytesAvailable() < m_nextBlockSize)
+            if (m_socket->bytesAvailable() < m_nextBlockSize)
                 break;
 
             int incomingNum{ 0 };
@@ -89,11 +81,11 @@ public slots:
     }
 
 private:
-    QTcpSocket* m_client{ nullptr };
-    std::array<int, 3>  m_data{};
+    QTcpSocket* m_socket{ nullptr };
+    std::array<int, 3> m_data{};
     QByteArray m_byteArray{};
     bool m_isReady{ false };
     quint16 m_nextBlockSize{ 0 };
 };
 
-#endif //SERVER_H
+#endif //CLIENT_H

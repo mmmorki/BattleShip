@@ -1,6 +1,8 @@
 #include "OpponentField.h"
 #include "Cell.h"
 
+#include <iostream>
+
 void OpponentField::enterCellSlot(const int row, const int col)
 {
     if (!m_canShot || m_cellData[row][col]->isChecked()) return;
@@ -19,10 +21,11 @@ void OpponentField::clickCellSlot(const int row, const int col)
 {
     if (!m_canShot || m_cellData[row][col]->isChecked()) return;
 
+    emit playerClickCellSignal(row, col);
+
     if (m_cellData[row][col]->isShip())
     {
         m_cellData[row][col]->setDamaged();
-        emit damageShipFromHiddenSignal(row, col);
         --m_shipCellsLeft;
 
         int boolSum = false;
@@ -41,7 +44,6 @@ void OpponentField::clickCellSlot(const int row, const int col)
         if (!boolSum)
         {
             startCell->setDestroyed();
-            emit destroyShipFromHiddenSignal(row, col);
             missAroundShip(row, col);
             currentCell = startCell->getNextShipCellPtr();
 
@@ -49,7 +51,6 @@ void OpponentField::clickCellSlot(const int row, const int col)
             {
                 auto [row, col] = currentCell->getRowCol();
                 currentCell->setDestroyed();
-                emit destroyShipFromHiddenSignal(row, col);
                 missAroundShip(row, col);
                 currentCell = currentCell->getNextShipCellPtr();
             }
@@ -59,7 +60,6 @@ void OpponentField::clickCellSlot(const int row, const int col)
     else
     {
         m_cellData[row][col]->setMissed();
-        emit missShipFromHiddenSignal(row, col);
         emit shotsAreOverSignal();
         m_canShot = false;
     }
@@ -97,20 +97,17 @@ void OpponentField::missAroundShip(const int row, const int col)
         if (!m_cellData[row - 1][col]->isChecked())
         {
             m_cellData[row - 1][col]->setMissed();
-            emit missShipFromHiddenSignal(row - 1, col);
         }
 
         if (col - 1 >= 0 && !m_cellData[row - 1][col - 1]->isChecked())
         {
             m_cellData[row - 1][col - 1]->setMissed();
-            emit missShipFromHiddenSignal(row - 1, col - 1);
         }
 
 
         if (col + 1 < 10 && !m_cellData[row - 1][col + 1]->isChecked())
         {
             m_cellData[row - 1][col + 1]->setMissed();
-            emit missShipFromHiddenSignal(row - 1, col + 1);
         }
     }
 
@@ -119,19 +116,16 @@ void OpponentField::missAroundShip(const int row, const int col)
         if (!m_cellData[row + 1][col]->isChecked())
         {
             m_cellData[row + 1][col]->setMissed();
-            emit missShipFromHiddenSignal(row + 1, col);
         }
 
         if (col - 1 >= 0 && !m_cellData[row + 1][col - 1]->isChecked())
         {
             m_cellData[row + 1][col - 1]->setMissed();
-            emit missShipFromHiddenSignal(row + 1, col - 1);
         }
 
         if (col + 1 < 10 && !m_cellData[row + 1][col + 1]->isChecked())
         {
             m_cellData[row + 1][col + 1]->setMissed();
-            emit missShipFromHiddenSignal(row + 1, col + 1);
         }
     }
 
@@ -140,19 +134,16 @@ void OpponentField::missAroundShip(const int row, const int col)
         if (!m_cellData[row][col - 1]->isChecked())
         {
             m_cellData[row][col - 1]->setMissed();
-            emit missShipFromHiddenSignal(row, col - 1);
         }
 
         if (row - 1 >= 0 && !m_cellData[row - 1][col - 1]->isChecked())
         {
             m_cellData[row - 1][col - 1]->setMissed();
-            emit missShipFromHiddenSignal(row - 1, col - 1);
         }
 
         if (row + 1 < 10 && !m_cellData[row + 1][col - 1]->isChecked())
         {
             m_cellData[row + 1][col - 1]->setMissed();
-            emit missShipFromHiddenSignal(row + 1, col - 1);
         }
     }
 
@@ -161,19 +152,16 @@ void OpponentField::missAroundShip(const int row, const int col)
         if (!m_cellData[row][col + 1]->isChecked())
         {
             m_cellData[row][col + 1]->setMissed();
-            emit missShipFromHiddenSignal(row, col + 1);
         }
 
         if (row - 1 >= 0 && !m_cellData[row - 1][col + 1]->isChecked())
         {
             m_cellData[row - 1][col + 1]->setMissed();
-            emit missShipFromHiddenSignal(row - 1, col + 1);
         }
 
         if (row + 1 < 10 && !m_cellData[row + 1][col + 1]->isChecked())
         {
             m_cellData[row + 1][col + 1]->setMissed();
-            emit missShipFromHiddenSignal(row + 1, col + 1);
         }
     }
 }
@@ -191,4 +179,20 @@ void OpponentField::clear()
 void OpponentField::activate()
 {
     m_canShot = true;
+}
+
+void OpponentField::createShip(const int row, const int col) const
+{
+    m_cellData[row][col]->addShip();
+    m_cellData[row][col]->hideCell();
+}
+
+void OpponentField::removeShip(const int row, const int col) const
+{
+    m_cellData[row][col]->removeShip();
+}
+
+void OpponentField::click(const int row, const int col)
+{
+    clickCellSlot(row, col);
 }

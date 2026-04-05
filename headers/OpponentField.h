@@ -29,12 +29,16 @@ public:
 
     void activate();
 
+    void createShip(const int row, const int col) const;
+
+    void removeShip(const int row, const int col) const;
+
+    void click(const int row, const int col);
+
 public: signals:
-    void missShipFromHiddenSignal(const int row, const int col);
-    void damageShipFromHiddenSignal(const int row, const int col);
-    void destroyShipFromHiddenSignal(const int row, const int col);
     void shotsAreOverSignal();
     void allShipsAreDestroyedSignal();
+    void playerClickCellSignal(const int row, const int col);
 
 private:
     bool m_canShot{};

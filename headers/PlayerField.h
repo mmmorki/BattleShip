@@ -12,18 +12,16 @@ class PlayerField final : public Field
 {
     Q_OBJECT
 
+public: signals:
+    void playerCreateAShipSignal(const int row, const int col);
+    void playerRemoveAShipSignal(const int row, const int col);
+
 private slots:
     void enterCellSlot(const int row, const int col) override;
 
     void leaveCellSlot(const int row, const int col) override;
 
     void clickCellSlot(const int row, const int col) override;
-
-    void missShipFromHiddenSlot(const int row, const int col);
-
-    void damageShipFromHiddenSlot(const int row, const int col);
-
-    void destroyShipFromHiddenSlot(const int row, const int col);
 
 public:
     enum class AddMode
@@ -61,8 +59,6 @@ public:
     void clear() override;
 
     void hideShips() const;
-
-    void connectSignalsFromHiddenField(const OpponentField* field) const;
 
 private:
     AddMode m_addMode{ AddMode::None };
