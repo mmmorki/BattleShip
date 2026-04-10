@@ -151,6 +151,13 @@ void MainWindow::dataSlot(const int identifier, const int row, const int col)
     {
         m_secondPlayerField->changeOrientationOnlineFunc(row);
     }
+
+    else if (identifier == 4)
+    {
+        m_firstPlayerHiddenField->activate();
+        m_firstPlayerHiddenField->clickCellOnlineFunc(row, col);
+        m_firstPlayerHiddenField->deactivate();
+    }
 }
 
 void MainWindow::playerClickCellOnlineSlot(const int row, const int col)
@@ -204,6 +211,23 @@ void MainWindow::playerChangeOrientationSlot(const int ID)
     }
 }
 
+void MainWindow::playerClickCellOnlineSlotOpponent(const int row, const int col)
+{
+    switch (m_gameVariant)
+    {
+        case GameVariant::Client:
+        {
+            m_client->send(4, row, col);
+            return;
+        }
+        case GameVariant::Server:
+        {
+            m_server->send(4, row, col);
+        }
+        default:;
+    }
+}
+
 MainWindow::MainWindow()
     : m_central{ new QWidget{ this } }
     , m_centralLayout{ new QGridLayout{ m_central } }
@@ -237,6 +261,8 @@ MainWindow::MainWindow()
         this, &MainWindow::playerChangeShipVariantSlot);
     connect(m_firstPlayerField, &PlayerField::playerChangeOrientationSignal,
         this, &MainWindow::playerChangeOrientationSlot);
+    connect(m_secondPlayerHiddenField, &OpponentField::playerClickCellOnlineSignal,
+        this, &MainWindow::playerClickCellOnlineSlotOpponent);
 
     //Настройка окна
     setFixedSize(1000, 500);
@@ -408,6 +434,8 @@ MainWindow::MainWindow()
             setWindowTitle("Морской бой -> Игра по сети -> Ожидание подключения");
             m_gameVariant = GameVariant::Client;
             m_firstPlayerField->setSendToOnline();
+            m_secondPlayerHiddenField->sendToOnline();
+            m_firstPlayerHiddenField->getFromOnline();
 
             dataSlot(0, 0, 1);
         }
@@ -423,6 +451,8 @@ MainWindow::MainWindow()
             setWindowTitle("Морской бой -> Игра по сети -> Ожидание подключения");
             m_gameVariant = GameVariant::Server;
             m_firstPlayerField->setSendToOnline();
+            m_secondPlayerHiddenField->sendToOnline();
+            m_firstPlayerHiddenField->getFromOnline();
         }
     };
     connect(m_chooseHostBtn, &QPushButton::clicked, chooseHostBtnLambda);

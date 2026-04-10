@@ -30,6 +30,7 @@ private slots:
     void playerClickCellOnlineSlot(const int row, const int col);
     void playerChangeShipVariantSlot(const int ID);
     void playerChangeOrientationSlot(const int ID);
+    void playerClickCellOnlineSlotOpponent(const int row, const int col);
 
 public:
     enum class Page

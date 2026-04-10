@@ -19,9 +19,7 @@ public: signals:
 
 private slots:
     void enterCellSlot(const int row, const int col) override;
-
     void leaveCellSlot(const int row, const int col) override;
-
     void clickCellSlot(const int row, const int col) override;
 
 public:

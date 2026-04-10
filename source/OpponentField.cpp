@@ -21,7 +21,8 @@ void OpponentField::clickCellSlot(const int row, const int col)
 {
     if (!m_canShot || m_cellData[row][col]->isChecked()) return;
 
-    emit playerClickCellSignal(row, col);
+    if (m_sendToOnline)
+        emit playerClickCellOnlineSignal(row, col);
 
     if (m_cellData[row][col]->isShip())
     {
@@ -60,18 +61,21 @@ void OpponentField::clickCellSlot(const int row, const int col)
     else
     {
         m_cellData[row][col]->setMissed();
-        emit shotsAreOverSignal();
+        if (!m_getFromOnline)
+            emit shotsAreOverSignal();
         m_canShot = false;
     }
 
-    if (m_shipCellsLeft == 0)
+    if (m_shipCellsLeft == 0 && !m_getFromOnline)
         emit allShipsAreDestroyedSignal();
 }
 
 OpponentField::OpponentField(QWidget* parent)
-    : Field(parent)
+    : Field{ parent }
     , m_canShot{ false }
     , m_shipCellsLeft{ 20 }
+    , m_sendToOnline{ false }
+    , m_getFromOnline{ false }
 {
 }
 
@@ -83,11 +87,6 @@ bool OpponentField::allShipsDestroyed() const
 bool OpponentField::canShot() const
 {
     return m_canShot;
-}
-
-void OpponentField::addShotOpportunity()
-{
-    m_canShot = true;
 }
 
 void OpponentField::missAroundShip(const int row, const int col)
@@ -172,13 +171,18 @@ void OpponentField::clear()
         for (std::size_t col{ 0 }; col < 10; ++col)
             m_cellData[row][col]->clear();
 
-    addShotOpportunity();
+    activate();
     m_shipCellsLeft = 20;
 }
 
 void OpponentField::activate()
 {
     m_canShot = true;
+}
+
+void OpponentField::deactivate()
+{
+    m_canShot = false;
 }
 
 void OpponentField::createShip(const int row, const int col) const
@@ -192,7 +196,19 @@ void OpponentField::removeShip(const int row, const int col) const
     m_cellData[row][col]->removeShip();
 }
 
-void OpponentField::click(const int row, const int col)
+///Функции для онлайн-режима
+
+void OpponentField::sendToOnline()
+{
+    m_sendToOnline = true;
+}
+
+void OpponentField::clickCellOnlineFunc(const int row, const int col)
 {
     clickCellSlot(row, col);
+}
+
+void OpponentField::getFromOnline()
+{
+    m_getFromOnline = true;
 }
