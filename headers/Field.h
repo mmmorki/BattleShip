@@ -27,7 +27,9 @@ public:
 
     virtual void clear() = 0;
 
-    void bindShips(std::vector<std::pair<int, int>>& vector) const;
+    void createShipByCoord(const std::vector<std::pair<int, int>>& vector) const;
+
+    int removeShipByCoord(const int row, const int col) const;
 
 protected:
     Cell* m_cellData[10][10]{};

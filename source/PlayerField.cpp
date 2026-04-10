@@ -6,6 +6,7 @@
 #include <QHBoxLayout>
 
 #include <array>
+#include <vector>
 
 void PlayerField::enterCellSlot(const int row, const int col)
 {
@@ -36,25 +37,12 @@ void PlayerField::leaveCellSlot(const int row, const int col)
 
 void PlayerField::clickCellSlot(const int row, const int col)
 {
+    if (m_sendToOnline) emit playerClickCellOnlineSignal(row, col);
+
     if (m_cellData[row][col]->isShip())
     {
-        int removedShipCellsCounter{ 0 };
-        Cell* currentCell{ m_cellData[row][col]->getNextShipCellPtr() };
-        m_cellData[row][col]->deleteNextCellShipPtr();
-
-        while (currentCell != nullptr)
-        {
-            currentCell->removeShip();
-            std::pair<int, int> coordinates{ currentCell->getRowAndCol() };
-            emit playerRemoveAShipSignal(coordinates.first, coordinates.second);
-            ++removedShipCellsCounter;
-            Cell* previousCell{ currentCell };
-            currentCell = currentCell->getNextShipCellPtr();
-            previousCell->deleteNextCellShipPtr();
-        }
-
+        const int removedShipCellsCounter{ removeShipByCoord(row, col) };
         --m_shipsLeft[removedShipCellsCounter - 1];
-
         return;
     }
 
@@ -62,47 +50,25 @@ void PlayerField::clickCellSlot(const int row, const int col)
         || isTooLong(row, col) || isShipNear(row, col)) return;
 
     const int length{ static_cast<int>(m_addMode) };
-    std::vector<Cell*> cells{};
+    std::vector<std::pair<int, int>> shipsToBind{};
+    shipsToBind.reserve(length  + 1);
 
     if (m_addOrientation == AddOrientation::Vertical)
     {
-        Cell* previousCell{ nullptr };
-        ++m_shipsLeft[static_cast<int>(m_addMode)];
-
         for (std::size_t index{ 0 }; index <= length; ++index)
-        {
-            Cell* currentCell{ m_cellData[row + index][col] };
-
-            if (index > 0 && previousCell) previousCell->link(currentCell);
-
-            if (index == length)
-                currentCell->link(m_cellData[row][col]);
-
-            currentCell->addShip();
-            previousCell = currentCell;
-            emit playerCreateAShipSignal(row + index, col);
-        }
+            shipsToBind.emplace_back(row + index, col);
+        ++m_shipsLeft[static_cast<int>(m_addMode)];
     }
 
     else if (m_addOrientation == AddOrientation::Horizontal)
     {
-        Cell* previousCell{ nullptr };
         ++m_shipsLeft[static_cast<int>(m_addMode)];
 
         for (std::size_t index{ 0 }; index <= length; ++index)
-        {
-            Cell* currentCell{ m_cellData[row][col + index] };
-
-            if (index > 0 && previousCell) previousCell->link(currentCell);
-
-            if (index == length)
-                currentCell->link(m_cellData[row][col]);
-
-            currentCell->addShip();
-            previousCell = currentCell;
-            emit playerCreateAShipSignal(row, col + index);
-        }
+            shipsToBind.emplace_back(row, col + index);
     }
+
+    createShipByCoord(shipsToBind);
 }
 
 PlayerField::PlayerField(QWidget* parent)
@@ -136,20 +102,57 @@ PlayerField::PlayerField(QWidget* parent)
     auto changeOrientationBtnLambda{
         [this] {
             if (m_addOrientation == AddOrientation::Vertical)
+            {
                 m_addOrientation = AddOrientation::Horizontal;
+                if (m_sendToOnline)
+                    emit playerChangeOrientationSignal(2);
+            }
+
             else
+            {
                 m_addOrientation = AddOrientation::Vertical;
+                if (m_sendToOnline)
+                    emit playerChangeOrientationSignal(1);
+            }
         }
     };
 
-    connect(m_addShip1Btn, &QPushButton::clicked,
-        [this] { m_addMode = AddMode::Ship1; });
-    connect(m_addShip2Btn, &QPushButton::clicked,
-        [this] { m_addMode = AddMode::Ship2; });
-    connect(m_addShip3Btn, &QPushButton::clicked,
-        [this] { m_addMode = AddMode::Ship3; });
-    connect(m_addShip4Btn, &QPushButton::clicked,
-        [this] { m_addMode = AddMode::Ship4; });
+    auto chooseShip1BtnLambda{
+        [this] {
+            m_addMode = AddMode::Ship1;
+            if (m_sendToOnline)
+                emit playerChangeShipVariantSignal(0);
+        }
+    };
+
+    auto chooseShip2BtnLambda{
+        [this] {
+            m_addMode = AddMode::Ship2;
+            if (m_sendToOnline)
+                emit playerChangeShipVariantSignal(1);
+        }
+    };
+
+    auto chooseShip3BtnLambda{
+        [this] {
+            m_addMode = AddMode::Ship3;
+            if (m_sendToOnline)
+                emit playerChangeShipVariantSignal(2);
+        }
+    };
+
+    auto chooseShip4BtnLambda{
+        [this] {
+            m_addMode = AddMode::Ship4;
+            if (m_sendToOnline)
+                emit playerChangeShipVariantSignal(3);
+        }
+    };
+
+    connect(m_addShip1Btn, &QPushButton::clicked, chooseShip1BtnLambda);
+    connect(m_addShip2Btn, &QPushButton::clicked, chooseShip2BtnLambda);
+    connect(m_addShip3Btn, &QPushButton::clicked, chooseShip3BtnLambda);
+    connect(m_addShip4Btn, &QPushButton::clicked, chooseShip4BtnLambda);
     connect(m_changeOrientationBtn, &QPushButton::clicked,
         changeOrientationBtnLambda);
 }
@@ -345,14 +348,22 @@ void PlayerField::hideShips() const
         }
 }
 
-/*
-void PlayerField::connectSignalsFromHiddenField(const OpponentField* field) const
+void PlayerField::setSendToOnline()
 {
-    connect(field, &OpponentField::missShipFromHiddenSignal,
-        this, &PlayerField::missShipFromHiddenSlot);
-    connect(field, &OpponentField::damageShipFromHiddenSignal,
-        this, &PlayerField::damageShipFromHiddenSlot);
-    connect(field, &OpponentField::destroyShipFromHiddenSignal,
-        this, &PlayerField::destroyShipFromHiddenSlot);
+    m_sendToOnline = true;
 }
-*/
+
+void PlayerField::clickCellOnlineFunc(const int row, const int col)
+{
+    clickCellSlot(row, col);
+}
+
+void PlayerField::changeOrientationOnlineFunc(const int ID)
+{
+    m_addOrientation = static_cast<AddOrientation>(ID);
+}
+
+void PlayerField::changeAddModeOnlineFunc(const int ID)
+{
+    m_addMode = static_cast<AddMode>(ID);
+}

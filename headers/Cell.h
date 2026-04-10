@@ -41,7 +41,7 @@ public:
 
     [[nodiscard]] Cell* getNextShipCellPtr() const;
 
-    void deleteNextCellShipPtr();
+    Cell* deleteNextCellShipPtr();
 
     [[nodiscard]] bool isChecked() const;
 

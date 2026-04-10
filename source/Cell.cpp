@@ -96,9 +96,12 @@ Cell* Cell::getNextShipCellPtr() const
     return m_nextShipCellPtr;
 }
 
-void Cell::deleteNextCellShipPtr()
+Cell* Cell::deleteNextCellShipPtr()
 {
+    Cell* nextShipCellPtr{ m_nextShipCellPtr };
     m_nextShipCellPtr = nullptr;
+
+    return nextShipCellPtr;
 }
 
 std::pair<int, int> Cell::getRowAndCol() const

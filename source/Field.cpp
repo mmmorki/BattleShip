@@ -53,7 +53,7 @@ void Field::transferShipsTo(const Field* other) const
         }
 }
 
-void Field::bindShips(std::vector<std::pair<int, int>>& vector) const
+void Field::createShipByCoord(const std::vector<std::pair<int, int>>& vector) const
 {
     std::vector<Cell*> cells{};
     std::size_t vectorSize{ vector.size() };
@@ -63,10 +63,30 @@ void Field::bindShips(std::vector<std::pair<int, int>>& vector) const
 
     for (std::size_t index{ 0 }; index < vectorSize; ++index)
     {
+        cells[index]->addShip();
+
         if (index == vectorSize - 1)
             cells[index]->link(cells[0]);
 
         else
             cells[index]->link(cells[index + 1]);
     }
+}
+
+int Field::removeShipByCoord(const int row, const int col) const
+{
+    int removedShipCellsCounter{ 0 };
+    Cell* currentCell{ m_cellData[row][col]->getNextShipCellPtr() };
+    m_cellData[row][col]->deleteNextCellShipPtr();
+
+    while (currentCell != nullptr)
+    {
+        currentCell->removeShip();
+        ++removedShipCellsCounter;
+        Cell* previousCell{ currentCell };
+        currentCell = currentCell->getNextShipCellPtr();
+        previousCell->deleteNextCellShipPtr();
+    }
+
+    return removedShipCellsCounter;
 }

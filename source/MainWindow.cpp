@@ -48,17 +48,36 @@ void MainWindow::shotsAreOverSlot()
 
 void MainWindow::allShipsAreDestroyedSlot()
 {
-    switch (m_turn)
+    switch (m_gameVariant)
     {
-        case Turn::Player1:
+        case GameVariant::Local:
         {
-            QMessageBox::information(this, " ", "Player1 выиграл");
+            switch (m_turn)
+            {
+                case Turn::Player1:
+                {
+                    QMessageBox::information(this, " ", "Player1 выиграл");
+                    break;
+                }
+                case Turn::Player2:
+                    QMessageBox::information(this, " ", "Player2 выиграл");
+                default:;
+            }
             break;
         }
-        case Turn::Player2:
-            QMessageBox::information(this, " ", "Player2 выиграл");
-        default: break;
+        case GameVariant::Server:
+        {
+            m_server->send(0, 0, 4);
+            break;
+        }
+        case GameVariant::Client:
+        {
+            m_client->send(0, 0, 4);
+        }
+        default:;
     }
+
+    QMessageBox::information(this, " ", "Вы выиграли");
 
     m_centralStack->setCurrentIndex(static_cast<int>(Page::Main));
 
@@ -66,24 +85,6 @@ void MainWindow::allShipsAreDestroyedSlot()
     m_secondPlayerField->clear();
     m_firstPlayerHiddenField->clear();
     m_secondPlayerHiddenField->clear();
-}
-
-void MainWindow::playerCreateAShipSlot(const int row, const int col)
-{
-    if (m_gameVariant == GameVariant::Client)
-        m_client->send(1, row, col);
-
-    else if (m_gameVariant == GameVariant::Server)
-        m_server->send(1, row, col);
-}
-
-void MainWindow::playerRemoveAShipSlot(const int row, const int col)
-{
-    if (m_gameVariant == GameVariant::Client)
-        m_client->send(2, row, col);
-
-    else if (m_gameVariant == GameVariant::Server)
-        m_server->send(2, row, col);
 }
 
 void MainWindow::dataSlot(const int identifier, const int row, const int col)
@@ -122,33 +123,84 @@ void MainWindow::dataSlot(const int identifier, const int row, const int col)
 
         else if (row == 0 && col == 3)
             m_secondPlayerHiddenField->activate();
+
+        else if (row == 0 && col == 4)
+        {
+            QMessageBox::information(this, " ", "Вы проиграли");
+
+            m_centralStack->setCurrentIndex(static_cast<int>(Page::Main));
+
+            m_firstPlayerField->clear();
+            m_secondPlayerField->clear();
+            m_firstPlayerHiddenField->clear();
+            m_secondPlayerHiddenField->clear();
+        }
     }
 
     else if (identifier == 1)
-        m_secondPlayerHiddenField->createShip(row, col);
+    {
+        m_secondPlayerField->clickCellOnlineFunc(row, col);
+    }
 
     else if (identifier == 2)
-        m_secondPlayerHiddenField->removeShip(row, col);
+    {
+        m_secondPlayerField->changeAddModeOnlineFunc(row);
+    }
 
     else if (identifier == 3)
-        m_firstPlayerHiddenField->click(row, col);
+    {
+        m_secondPlayerField->changeOrientationOnlineFunc(row);
+    }
 }
 
-void MainWindow::playerClickCellSlot(const int row, const int col)
+void MainWindow::playerClickCellOnlineSlot(const int row, const int col)
 {
     switch (m_gameVariant)
     {
-        case GameVariant::Server:
-        {
-            m_server->send(3, row, col);
-            return;
-        }
-        case GameVariant::Client:
-        {
-            m_client->send(3, row, col);
-            return;
-        }
-        default:;
+    case GameVariant::Client:
+    {
+        m_client->send(1, row, col);
+        return;
+    }
+    case GameVariant::Server:
+    {
+        m_server->send(1, row, col);
+    }
+    default:;
+    }
+}
+
+void MainWindow::playerChangeShipVariantSlot(const int ID)
+{
+    switch (m_gameVariant)
+    {
+    case GameVariant::Client:
+    {
+        m_client->send(2, ID, 0);
+        return;
+    }
+    case GameVariant::Server:
+    {
+        m_server->send(2, ID, 0);
+    }
+    default:;
+    }
+}
+
+void MainWindow::playerChangeOrientationSlot(const int ID)
+{
+    switch (m_gameVariant)
+    {
+    case GameVariant::Client:
+    {
+        m_client->send(3, ID, 0);
+        return;
+    }
+    case GameVariant::Server:
+    {
+        m_server->send(3, ID, 0);
+    }
+    default:;
     }
 }
 
@@ -179,6 +231,13 @@ MainWindow::MainWindow()
     , m_connectingPageLayout{ new QGridLayout{ m_connectingPage } }
     , m_connectingLabel{ new QLabel{ "Ожидание подключения", m_connectingPage } }
 {
+    connect(m_firstPlayerField, &PlayerField::playerClickCellOnlineSignal,
+        this, &MainWindow::playerClickCellOnlineSlot);
+    connect(m_firstPlayerField, &PlayerField::playerChangeShipVariantSignal,
+        this, &MainWindow::playerChangeShipVariantSlot);
+    connect(m_firstPlayerField, &PlayerField::playerChangeOrientationSignal,
+        this, &MainWindow::playerChangeOrientationSlot);
+
     //Настройка окна
     setFixedSize(1000, 500);
     setWindowTitle("Морской бой");
@@ -339,12 +398,6 @@ MainWindow::MainWindow()
         this, &MainWindow::allShipsAreDestroyedSlot);
     connect(m_secondPlayerHiddenField, &OpponentField::allShipsAreDestroyedSignal,
         this, &MainWindow::allShipsAreDestroyedSlot);
-    connect(m_firstPlayerField, &PlayerField::playerCreateAShipSignal,
-        this, &MainWindow::playerCreateAShipSlot);
-    connect(m_firstPlayerField, &PlayerField::playerRemoveAShipSignal,
-        this, &MainWindow::playerRemoveAShipSlot);
-    connect(m_secondPlayerHiddenField, &OpponentField::playerClickCellSignal,
-        this, &MainWindow::playerClickCellSlot);
 
     auto chooseClientBtnLambda{
         [this] {
@@ -354,6 +407,7 @@ MainWindow::MainWindow()
             m_centralStack->setCurrentIndex(static_cast<int>(Page::Connecting));
             setWindowTitle("Морской бой -> Игра по сети -> Ожидание подключения");
             m_gameVariant = GameVariant::Client;
+            m_firstPlayerField->setSendToOnline();
 
             dataSlot(0, 0, 1);
         }
@@ -368,6 +422,7 @@ MainWindow::MainWindow()
             m_centralStack->setCurrentIndex(static_cast<int>(Page::Connecting));
             setWindowTitle("Морской бой -> Игра по сети -> Ожидание подключения");
             m_gameVariant = GameVariant::Server;
+            m_firstPlayerField->setSendToOnline();
         }
     };
     connect(m_chooseHostBtn, &QPushButton::clicked, chooseHostBtnLambda);
@@ -378,14 +433,10 @@ void MainWindow::startGame()
     m_centralStack->setCurrentIndex(static_cast<int>(Page::Game));
 
     m_firstPlayerField->transferShipsTo(m_firstPlayerHiddenField);
+    m_secondPlayerField->transferShipsTo(m_secondPlayerHiddenField);
 
-    if (m_gameVariant == GameVariant::Local)
-    {
-        m_secondPlayerField->transferShipsTo(m_secondPlayerHiddenField);
-        m_secondPlayerHiddenField->activate();
-    }
-
-    else if (m_gameVariant == GameVariant::Server)
+    if (m_gameVariant == GameVariant::Local
+        || m_gameVariant == GameVariant::Server)
         m_secondPlayerHiddenField->activate();
 
     setWindowTitle("Морской бой -> Локальная игра -> Бой");

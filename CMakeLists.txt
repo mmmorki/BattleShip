@@ -27,7 +27,8 @@ add_executable(BattleShip source/main.cpp
         headers/OpponentField.h
         headers/PlayerField.h
         headers/MainWindow.h
-        headers/Server.h)
+        headers/Server.h
+        headers/Client.h)
 
 target_include_directories(BattleShip PRIVATE
         headers)

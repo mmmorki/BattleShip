@@ -25,10 +25,11 @@ class MainWindow final : public QMainWindow
 private slots:
     void shotsAreOverSlot();
     void allShipsAreDestroyedSlot();
-    void playerCreateAShipSlot(const int row, const int col);
-    void playerRemoveAShipSlot(const int row, const int col);
     void dataSlot(const int identifier, const int col, const int row);
-    void playerClickCellSlot(const int row, const int col);
+    ///Слоты для онлайн режима
+    void playerClickCellOnlineSlot(const int row, const int col);
+    void playerChangeShipVariantSlot(const int ID);
+    void playerChangeOrientationSlot(const int ID);
 
 public:
     enum class Page

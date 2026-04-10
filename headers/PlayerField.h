@@ -13,8 +13,9 @@ class PlayerField final : public Field
     Q_OBJECT
 
 public: signals:
-    void playerCreateAShipSignal(const int row, const int col);
-    void playerRemoveAShipSignal(const int row, const int col);
+    void playerClickCellOnlineSignal(const int row, const int col);
+    void playerChangeShipVariantSignal(const int ID);
+    void playerChangeOrientationSignal(const int ID);
 
 private slots:
     void enterCellSlot(const int row, const int col) override;
@@ -60,6 +61,16 @@ public:
 
     void hideShips() const;
 
+    ///Функции для онлайн режима
+
+    void setSendToOnline();
+
+    void clickCellOnlineFunc(const int row, const int col);
+
+    void changeOrientationOnlineFunc(const int ID);
+
+    void changeAddModeOnlineFunc(const int ID);
+
 private:
     AddMode m_addMode{ AddMode::None };
     AddOrientation m_addOrientation{ AddOrientation::None };
@@ -70,6 +81,7 @@ private:
     QPushButton* m_addShip3Btn{ nullptr };
     QPushButton* m_addShip4Btn{ nullptr };
     QPushButton* m_changeOrientationBtn{ nullptr };
+    bool m_sendToOnline{ false };
 };
 
 #endif //NEWPLAYERFIELD_H
