@@ -67,17 +67,17 @@ void MainWindow::allShipsAreDestroyedSlot()
         }
         case GameVariant::Server:
         {
+            QMessageBox::information(this, " ", "Вы выиграли");
             m_server->send(0, 0, 4);
             break;
         }
         case GameVariant::Client:
         {
+            QMessageBox::information(this, " ", "Вы выиграли");
             m_client->send(0, 0, 4);
         }
         default:;
     }
-
-    QMessageBox::information(this, " ", "Вы выиграли");
 
     m_centralStack->setCurrentIndex(static_cast<int>(Page::Main));
 
