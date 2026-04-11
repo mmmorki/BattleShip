@@ -9,6 +9,8 @@ class OpponentField final : public Field
 
 public: signals:
     void playerClickCellOnlineSignal(const int row, const int col);
+    void shotsAreOverSignal();
+    void allShipsAreDestroyedSignal();
 
 private slots:
     void enterCellSlot(const int row, const int col) override;
@@ -37,10 +39,6 @@ public:
     void getFromOnline();
 
     void clickCellOnlineFunc(const int row, const int col);
-
-public: signals:
-    void shotsAreOverSignal();
-    void allShipsAreDestroyedSignal();
 
 private:
     bool m_canShot{};
