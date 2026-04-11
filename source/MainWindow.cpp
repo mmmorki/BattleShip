@@ -4,6 +4,8 @@
 #include "Server.h"
 #include "Client.h"
 
+#include <iostream>
+
 #include <QGridLayout>
 #include <QStackedWidget>
 #include <QPushButton>

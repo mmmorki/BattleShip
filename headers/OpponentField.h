@@ -30,11 +30,7 @@ public:
 
     void deactivate();
 
-    void createShip(const int row, const int col) const;
-
-    void removeShip(const int row, const int col) const;
-
-    ///Функции для онлайн-режиме
+    //Функции для онлайн-режиме
 
     void sendToOnline();
 

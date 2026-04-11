@@ -22,6 +22,7 @@ add_executable(BattleShip source/main.cpp
         source/OpponentField.cpp
         source/PlayerField.cpp
         source/Cell.cpp
+        source/Client.cpp
         headers/Cell.h
         headers/Field.h
         headers/OpponentField.h

@@ -1,10 +1,7 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#include <iostream>
-
 #include <QTcpServer>
-#include <QTcpSocket>
 
 class Server final : public QTcpServer
 {
@@ -13,80 +10,19 @@ class Server final : public QTcpServer
 public: signals:
     void dataSignal(const int identifier, const int row, const int col);
 
-public:
-    explicit Server(QObject* parent = nullptr)
-        : QTcpServer(parent)
-    {
-        this->listen(QHostAddress::Any, 2323);
-        std::cerr << "server listening on port 2323" << std::endl;
-    }
-
-    void send(const int identifier, const int col, const int row)
-    {
-        m_byteArray.clear();
-
-        QDataStream out{ &m_byteArray, QIODevice::WriteOnly };
-        out.setVersion(QDataStream::Qt_6_10);
-
-        const int num{ identifier * 100 + col * 10 + row };
-        out << quint16(0) << num;
-        out.device()->seek(0);
-        out << quint16(m_byteArray.size() - sizeof(quint16));
-
-        m_client->write(m_byteArray);
-    }
-
-    void incomingConnection(qintptr socketDescriptor) override
-    {
-        m_client = new QTcpSocket{};
-        m_client->setSocketDescriptor(socketDescriptor);
-        connect(m_client, &QTcpSocket::readyRead, this, &Server::readyReadSlot);
-        connect(m_client, &QTcpSocket::disconnected, m_client, &QTcpSocket::deleteLater);
-        std::cerr << "client connected" << std::endl;
-        emit dataSignal(0, 0, 1);
-    }
-
-    [[nodiscard]] bool isReady() const
-    {
-        return m_isReady;
-    }
-
-    void getReady()
-    {
-        m_isReady = true;
-    }
-
 public slots:
-    void readyReadSlot()
-    {
-        QDataStream in(m_client);
-        in.setVersion(QDataStream::Qt_6_10);
+    void readyReadSlot();
 
-        for (;;)
-        {
-            if (m_nextBlockSize == 0)
-            {
-                if (m_client->bytesAvailable() < 2)
-                    break;
+public:
+    explicit Server(QObject* parent = nullptr);
 
-                in >> m_nextBlockSize;
-            }
+    void send(const int identifier, const int col, const int row);
 
-            if (m_client->bytesAvailable() < m_nextBlockSize)
-                break;
+    void incomingConnection(qintptr socketDescriptor) override;
 
-            int incomingNum{ 0 };
-            in >> incomingNum;
+    [[nodiscard]] bool isReady() const;
 
-            m_data[0] = incomingNum / 100;
-            m_data[1] = incomingNum % 100 / 10;
-            m_data[2] = incomingNum % 10;
-
-            emit dataSignal(m_data[0], m_data[1], m_data[2]);
-
-            m_nextBlockSize = 0;
-        }
-    }
+    void getReady();
 
 private:
     QTcpSocket* m_client{ nullptr };

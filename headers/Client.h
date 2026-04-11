@@ -1,9 +1,9 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-#include <QTcpSocket>
+#include <QObject>
 
-#include <iostream>
+class QTcpSocket;
 
 class Client final : public QObject
 {
@@ -12,73 +12,17 @@ class Client final : public QObject
 public: signals:
     void dataSignal(const int identifier, const int row, const int col);
 
-public:
-    explicit Client(QObject* parent = nullptr)
-        : QObject(parent)
-        , m_socket{ new QTcpSocket{ this } }
-    {
-        m_socket->connectToHost("127.0.0.1", 2323);
-
-        connect(m_socket, &QTcpSocket::readyRead, this, &Client::readyReadSlot);
-        connect(m_socket, &QTcpSocket::disconnected, m_socket, &QTcpSocket::deleteLater);
-    }
-
-    void send(const int identifier, const int row, const int col)
-    {
-        m_byteArray.clear();
-
-        QDataStream out{ &m_byteArray, QIODevice::WriteOnly };
-        out.setVersion(QDataStream::Qt_6_10);
-
-        const int num{ identifier * 100 + row * 10 + col };
-        out << quint16(0) << num;
-        out.device()->seek(0);
-        out << quint16(m_byteArray.size() - sizeof(quint16));
-
-        m_socket->write(m_byteArray);
-    }
-
-    [[nodiscard]] bool isReady() const
-    {
-        return m_isReady;
-    }
-
-    void getReady()
-    {
-        m_isReady = true;
-    }
-
 public slots:
-    void readyReadSlot()
-    {
-        QDataStream in{ m_socket };
-        in.setVersion(QDataStream::Qt_6_10);
+    void readyReadSlot();
 
-        for (;;)
-        {
-            if (m_nextBlockSize == 0)
-            {
-                if (m_socket->bytesAvailable() < 2)
-                    break;
+public:
+    explicit Client(QObject* parent = nullptr);
 
-                in >> m_nextBlockSize;
-            }
+    void send(const int identifier, const int row, const int col);
 
-            if (m_socket->bytesAvailable() < m_nextBlockSize)
-                break;
+    [[nodiscard]] bool isReady() const;
 
-            int incomingNum{ 0 };
-            in >> incomingNum;
-
-            m_data[0] = incomingNum / 100;
-            m_data[1] = incomingNum % 100 / 10;
-            m_data[2] = incomingNum % 10;
-
-            emit dataSignal(m_data[0], m_data[1], m_data[2]);
-
-            m_nextBlockSize = 0;
-        }
-    }
+    void getReady();
 
 private:
     QTcpSocket* m_socket{ nullptr };

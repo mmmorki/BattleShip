@@ -185,18 +185,7 @@ void OpponentField::deactivate()
     m_canShot = false;
 }
 
-void OpponentField::createShip(const int row, const int col) const
-{
-    m_cellData[row][col]->addShip();
-    m_cellData[row][col]->hideCell();
-}
-
-void OpponentField::removeShip(const int row, const int col) const
-{
-    m_cellData[row][col]->removeShip();
-}
-
-///Функции для онлайн-режима
+//Функции для онлайн-режима
 
 void OpponentField::sendToOnline()
 {
