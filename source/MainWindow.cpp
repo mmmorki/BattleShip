@@ -25,11 +25,13 @@ void MainWindow::shotsAreOverSlot()
                 {
                     m_firstPlayerHiddenField->activate();
                     m_turn = Turn::Player2;
+                    m_whoseTurnLabel->setText("Ход Player2");
                     return;
                 }
                 case Turn::Player2:
                     m_secondPlayerHiddenField->activate();
                     m_turn = Turn::Player1;
+                    m_whoseTurnLabel->setText("Ход Player1");
                     return;
                 default: return;
             }
@@ -37,11 +39,13 @@ void MainWindow::shotsAreOverSlot()
         case GameVariant::Server:
         {
             m_server->send(0, 0, 3);
+            m_whoseTurnLabel->setText("Ход противника");
             return;
         }
         case GameVariant::Client:
         {
             m_client->send(0, 0, 3);
+            m_whoseTurnLabel->setText("Ход противника");
             return;
         }
         default: return;
@@ -124,7 +128,10 @@ void MainWindow::dataSlot(const int identifier, const int row, const int col)
             startGame();
 
         else if (row == 0 && col == 3)
+        {
             m_secondPlayerHiddenField->activate();
+            m_whoseTurnLabel->setText("Ваш ход");
+        }
 
         else if (row == 0 && col == 4)
         {
@@ -140,19 +147,13 @@ void MainWindow::dataSlot(const int identifier, const int row, const int col)
     }
 
     else if (identifier == 1)
-    {
         m_secondPlayerField->clickCellOnlineFunc(row, col);
-    }
 
     else if (identifier == 2)
-    {
         m_secondPlayerField->changeAddModeOnlineFunc(row);
-    }
 
     else if (identifier == 3)
-    {
         m_secondPlayerField->changeOrientationOnlineFunc(row);
-    }
 
     else if (identifier == 4)
     {
@@ -256,6 +257,7 @@ MainWindow::MainWindow()
     , m_connectingPage{ new QWidget{ this } }
     , m_connectingPageLayout{ new QGridLayout{ m_connectingPage } }
     , m_connectingLabel{ new QLabel{ "Ожидание подключения", m_connectingPage } }
+    , m_whoseTurnLabel{ new QLabel{ this } }
 {
     connect(m_firstPlayerField, &PlayerField::playerClickCellOnlineSignal,
         this, &MainWindow::playerClickCellOnlineSlot);
@@ -310,8 +312,10 @@ MainWindow::MainWindow()
     //Настройка m_gamePage
     m_centralStack->insertWidget(3, m_gamePage);
     m_gamePage->setLayout(m_gamePageLayout);
-    m_gamePageLayout->addWidget(m_firstPlayerHiddenField, 0, 0, 1, 1);
-    m_gamePageLayout->addWidget(m_secondPlayerHiddenField, 0, 1, 1, 1);
+    m_gamePageLayout->addWidget(m_firstPlayerHiddenField, 0, 1, 1, 1);
+    m_gamePageLayout->addWidget(m_secondPlayerHiddenField, 0, 2, 1, 1);
+    m_gamePageLayout->addWidget(m_whoseTurnLabel, 0, 0, 1, 2);
+    m_whoseTurnLabel->setAlignment(Qt::AlignCenter);
 
     //Подключения кнопки выбора локального режима игры и лямбда для неё
     auto chooseLocalBtnLambda{
@@ -467,9 +471,23 @@ void MainWindow::startGame()
     m_firstPlayerField->transferShipsTo(m_firstPlayerHiddenField);
     m_secondPlayerField->transferShipsTo(m_secondPlayerHiddenField);
 
-    if (m_gameVariant == GameVariant::Local
-        || m_gameVariant == GameVariant::Server)
+    if (m_gameVariant == GameVariant::Local)
+    {
+        setWindowTitle("Морской бой -> Локальная игра -> Бой");
         m_secondPlayerHiddenField->activate();
+        m_whoseTurnLabel->setText("Ход Player1");
+    }
 
-    setWindowTitle("Морской бой -> Локальная игра -> Бой");
+    else if (m_gameVariant == GameVariant::Server)
+    {
+        setWindowTitle("Морской бой -> Игра по сети (сервер) -> Бой");
+        m_secondPlayerHiddenField->activate();
+        m_whoseTurnLabel->setText("Ваш ход");
+    }
+
+    else
+    {
+        setWindowTitle("Морской бой -> Игра по сети (клиент) -> Бой");
+        m_whoseTurnLabel->setText("Ход противника");
+    }
 }

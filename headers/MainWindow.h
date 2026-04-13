@@ -26,7 +26,7 @@ private slots:
     void shotsAreOverSlot();
     void allShipsAreDestroyedSlot();
     void dataSlot(const int identifier, const int col, const int row);
-    ///Слоты для онлайн режима
+    //Слоты для онлайн режима
     void playerClickCellOnlineSlot(const int row, const int col);
     void playerChangeShipVariantSlot(const int ID);
     void playerChangeOrientationSlot(const int ID);
@@ -93,6 +93,7 @@ private:
     QWidget* m_connectingPage{ nullptr };
     QGridLayout* m_connectingPageLayout{ nullptr };
     QLabel* m_connectingLabel{ nullptr };
+    QLabel* m_whoseTurnLabel{ nullptr };
 };
 
 #endif //MAINWINDOW_H
