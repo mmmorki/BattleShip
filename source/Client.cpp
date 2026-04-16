@@ -6,7 +6,7 @@ Client::Client(QObject* parent)
     : QObject(parent)
     , m_socket{ new QTcpSocket{ this } }
 {
-    m_socket->connectToHost("127.0.0.1", 2323);
+    m_socket->connectToHost("26.122.240.175", 2323);
 
     connect(m_socket, &QTcpSocket::readyRead, this, &Client::readyReadSlot);
     connect(m_socket, &QTcpSocket::disconnected, m_socket, &QTcpSocket::deleteLater);

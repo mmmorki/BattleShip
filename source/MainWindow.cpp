@@ -312,8 +312,8 @@ MainWindow::MainWindow()
     //Настройка m_gamePage
     m_centralStack->insertWidget(3, m_gamePage);
     m_gamePage->setLayout(m_gamePageLayout);
-    m_gamePageLayout->addWidget(m_firstPlayerHiddenField, 0, 1, 1, 1);
-    m_gamePageLayout->addWidget(m_secondPlayerHiddenField, 0, 2, 1, 1);
+    m_gamePageLayout->addWidget(m_firstPlayerHiddenField, 1, 0, 1, 1);
+    m_gamePageLayout->addWidget(m_secondPlayerHiddenField, 1, 1, 1, 1);
     m_gamePageLayout->addWidget(m_whoseTurnLabel, 0, 0, 1, 2);
     m_whoseTurnLabel->setAlignment(Qt::AlignCenter);
 
