@@ -1,0 +1,8 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource>
+        <file>sounds/drop_the_bomb(miss).wav</file>
+        <file>sounds/drop_the_bomb(hit).wav</file>
+        <file>sounds/drop_the_bomb(destroy).wav</file>
+    </qresource>
+</RCC>

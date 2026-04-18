@@ -12,6 +12,7 @@
 #include <QLabel>
 #include <QMessageBox>
 #include <QTcpSocket>
+#include <QSoundEffect>
 
 void MainWindow::shotsAreOverSlot()
 {

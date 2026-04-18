@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#include <QSoundEffect>
+
 void OpponentField::enterCellSlot(const int row, const int col)
 {
     if (!m_canShot || m_cellData[row][col]->isChecked()) return;
@@ -26,6 +28,7 @@ void OpponentField::clickCellSlot(const int row, const int col)
 
     if (m_cellData[row][col]->isShip())
     {
+        m_dropTheBombHit->play();
         m_cellData[row][col]->setDamaged();
         --m_shipCellsLeft;
 
@@ -44,6 +47,7 @@ void OpponentField::clickCellSlot(const int row, const int col)
 
         if (!boolSum)
         {
+            m_dropTheBombDestroy->play();
             startCell->setDestroyed();
             missAroundShip(row, col);
             currentCell = startCell->getNextShipCellPtr();
@@ -61,6 +65,7 @@ void OpponentField::clickCellSlot(const int row, const int col)
     else
     {
         m_cellData[row][col]->setMissed();
+        m_dropTheBombMiss->play();
         if (!m_getFromOnline)
             emit shotsAreOverSignal();
         m_canShot = false;
@@ -76,7 +81,18 @@ OpponentField::OpponentField(QWidget* parent)
     , m_shipCellsLeft{ 20 }
     , m_sendToOnline{ false }
     , m_getFromOnline{ false }
+    , m_dropTheBombMiss{ new QSoundEffect{ this } }
+    , m_dropTheBombHit{ new QSoundEffect{ this } }
+    , m_dropTheBombDestroy{ new QSoundEffect{ this } }
 {
+    m_dropTheBombMiss->setSource(QUrl("qrc:/sounds/drop_the_bomb(miss).wav"));
+    m_dropTheBombMiss->setVolume(1);
+
+    m_dropTheBombHit->setSource(QUrl("qrc:/sounds/drop_the_bomb(hit).wav"));
+    m_dropTheBombHit->setVolume(0.2);
+
+    m_dropTheBombDestroy->setSource(QUrl("qrc:/sounds/drop_the_bomb(destroy).wav"));
+    m_dropTheBombDestroy->setVolume(0.5);
 }
 
 bool OpponentField::allShipsDestroyed() const

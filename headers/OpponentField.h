@@ -3,6 +3,8 @@
 
 #include "Field.h"
 
+class QSoundEffect;
+
 class OpponentField final : public Field
 {
     Q_OBJECT
@@ -45,6 +47,9 @@ private:
     int m_shipCellsLeft{};
     bool m_sendToOnline{};
     bool m_getFromOnline{};
+    QSoundEffect* m_dropTheBombMiss{ nullptr };
+    QSoundEffect* m_dropTheBombHit{ nullptr };
+    QSoundEffect* m_dropTheBombDestroy{ nullptr };
 };
 
 #endif //NEWOPPONENTFIELD_H
