@@ -17,6 +17,7 @@ class QLabel;
 class QHBoxLayout;
 class QMessageBox;
 class QTcpSocket;
+class QSoundEffect;
 
 class MainWindow final : public QMainWindow
 {
@@ -94,6 +95,8 @@ private:
     QGridLayout* m_connectingPageLayout{ nullptr };
     QLabel* m_connectingLabel{ nullptr };
     QLabel* m_whoseTurnLabel{ nullptr };
+    QSoundEffect* m_defeat{ nullptr };
+    QSoundEffect* m_victory{ nullptr };
 };
 
 #endif //MAINWINDOW_H

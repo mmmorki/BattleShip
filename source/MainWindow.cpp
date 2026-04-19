@@ -74,14 +74,16 @@ void MainWindow::allShipsAreDestroyedSlot()
         }
         case GameVariant::Server:
         {
-            QMessageBox::information(this, " ", "Вы выиграли");
             m_server->send(0, 0, 4);
+            m_victory->play();
+            QMessageBox::information(this, " ", "Вы выиграли");
             break;
         }
         case GameVariant::Client:
         {
-            QMessageBox::information(this, " ", "Вы выиграли");
             m_client->send(0, 0, 4);
+            m_victory->play();
+            QMessageBox::information(this, " ", "Вы выиграли");
         }
         default:;
     }
@@ -136,6 +138,7 @@ void MainWindow::dataSlot(const int identifier, const int row, const int col)
 
         else if (row == 0 && col == 4)
         {
+            m_defeat->play();
             QMessageBox::information(this, " ", "Вы проиграли");
 
             m_centralStack->setCurrentIndex(static_cast<int>(Page::Main));
@@ -259,6 +262,8 @@ MainWindow::MainWindow()
     , m_connectingPageLayout{ new QGridLayout{ m_connectingPage } }
     , m_connectingLabel{ new QLabel{ "Ожидание подключения", m_connectingPage } }
     , m_whoseTurnLabel{ new QLabel{ this } }
+    , m_defeat{ new QSoundEffect{ this } }
+    , m_victory{ new QSoundEffect{ this } }
 {
     connect(m_firstPlayerField, &PlayerField::playerClickCellOnlineSignal,
         this, &MainWindow::playerClickCellOnlineSlot);
@@ -268,6 +273,12 @@ MainWindow::MainWindow()
         this, &MainWindow::playerChangeOrientationSlot);
     connect(m_secondPlayerHiddenField, &OpponentField::playerClickCellOnlineSignal,
         this, &MainWindow::playerClickCellOnlineSlotOpponent);
+
+    //Настройка звуков
+    m_defeat->setSource(QUrl("qrc:/sounds/defeat.wav"));
+    m_defeat->setVolume(0.5);
+    m_victory->setSource(QUrl("qrc:/sounds/victory.wav"));
+    m_victory->setVolume(0.5);
 
     //Настройка окна
     setFixedSize(1000, 500);

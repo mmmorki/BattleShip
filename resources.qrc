@@ -4,5 +4,7 @@
         <file>sounds/drop_the_bomb(miss).wav</file>
         <file>sounds/drop_the_bomb(hit).wav</file>
         <file>sounds/drop_the_bomb(destroy).wav</file>
+        <file>sounds/defeat.wav</file>
+        <file>sounds/victory.wav</file>
     </qresource>
 </RCC>
