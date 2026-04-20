@@ -185,8 +185,10 @@ void OpponentField::clear()
         for (std::size_t col{ 0 }; col < 10; ++col)
             m_cellData[row][col]->clear();
 
-    activate();
     m_shipCellsLeft = 20;
+    m_canShot = false;
+    m_sendToOnline = false;
+    m_getFromOnline = false;
 }
 
 void OpponentField::activate()

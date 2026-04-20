@@ -88,12 +88,7 @@ void MainWindow::allShipsAreDestroyedSlot()
         default:;
     }
 
-    m_centralStack->setCurrentIndex(static_cast<int>(Page::Main));
-
-    m_firstPlayerField->clear();
-    m_secondPlayerField->clear();
-    m_firstPlayerHiddenField->clear();
-    m_secondPlayerHiddenField->clear();
+    endGame();
 }
 
 void MainWindow::dataSlot(const int identifier, const int row, const int col)
@@ -141,12 +136,7 @@ void MainWindow::dataSlot(const int identifier, const int row, const int col)
             m_defeat->play();
             QMessageBox::information(this, " ", "Вы проиграли");
 
-            m_centralStack->setCurrentIndex(static_cast<int>(Page::Main));
-
-            m_firstPlayerField->clear();
-            m_secondPlayerField->clear();
-            m_firstPlayerHiddenField->clear();
-            m_secondPlayerHiddenField->clear();
+            endGame();
         }
     }
 
@@ -511,4 +501,19 @@ void MainWindow::startGame()
         setWindowTitle("Морской бой -> Игра по сети (клиент) -> Бой");
         m_whoseTurnLabel->setText("Ход противника");
     }
+}
+
+void MainWindow::endGame()
+{
+    delete m_server;
+    delete m_client;
+
+    m_readyLabel->setText("Противник не готов");
+
+    m_centralStack->setCurrentIndex(static_cast<int>(Page::Main));
+
+    m_firstPlayerField->clear();
+    m_secondPlayerField->clear();
+    m_firstPlayerHiddenField->clear();
+    m_secondPlayerHiddenField->clear();
 }

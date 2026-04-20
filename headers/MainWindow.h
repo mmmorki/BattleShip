@@ -64,6 +64,8 @@ public:
 
     void startGame();
 
+    void endGame();
+
 private:
     GameVariant m_gameVariant{ GameVariant::None };
     Turn m_turn{ Turn::None };
