@@ -86,13 +86,11 @@ OpponentField::OpponentField(QWidget* parent)
     , m_dropTheBombDestroy{ new QSoundEffect{ this } }
 {
     m_dropTheBombMiss->setSource(QUrl("qrc:/sounds/drop_the_bomb(miss).wav"));
-    m_dropTheBombMiss->setVolume(1);
-
+    m_dropTheBombMiss->setVolume(0.3);
     m_dropTheBombHit->setSource(QUrl("qrc:/sounds/drop_the_bomb(hit).wav"));
-    m_dropTheBombHit->setVolume(0.2);
-
+    m_dropTheBombHit->setVolume(0.1);
     m_dropTheBombDestroy->setSource(QUrl("qrc:/sounds/drop_the_bomb(destroy).wav"));
-    m_dropTheBombDestroy->setVolume(0.5);
+    m_dropTheBombDestroy->setVolume(0.3);
 }
 
 bool OpponentField::allShipsDestroyed() const

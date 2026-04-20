@@ -97,6 +97,7 @@ private:
     QLabel* m_whoseTurnLabel{ nullptr };
     QSoundEffect* m_defeat{ nullptr };
     QSoundEffect* m_victory{ nullptr };
+    QSoundEffect* m_menuClick{ nullptr };
 };
 
 #endif //MAINWINDOW_H

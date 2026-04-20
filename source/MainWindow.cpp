@@ -264,6 +264,7 @@ MainWindow::MainWindow()
     , m_whoseTurnLabel{ new QLabel{ this } }
     , m_defeat{ new QSoundEffect{ this } }
     , m_victory{ new QSoundEffect{ this } }
+    , m_menuClick{ new QSoundEffect{ this } }
 {
     connect(m_firstPlayerField, &PlayerField::playerClickCellOnlineSignal,
         this, &MainWindow::playerClickCellOnlineSlot);
@@ -279,6 +280,8 @@ MainWindow::MainWindow()
     m_defeat->setVolume(0.5);
     m_victory->setSource(QUrl("qrc:/sounds/victory.wav"));
     m_victory->setVolume(0.5);
+    m_menuClick->setSource(QUrl("qrc:/sounds/menu_click.wav"));
+    m_menuClick->setVolume(0.5);
 
     //Настройка окна
     setFixedSize(1000, 500);
@@ -332,6 +335,7 @@ MainWindow::MainWindow()
     //Подключения кнопки выбора локального режима игры и лямбда для неё
     auto chooseLocalBtnLambda{
         [this] {
+            m_menuClick->play();
             m_centralStack->setCurrentIndex(static_cast<int>(Page::Prepare));
             setWindowTitle("Морской бой -> Локальная игра -> Расстановка");
             m_gameVariant = GameVariant::Local;
@@ -347,6 +351,7 @@ MainWindow::MainWindow()
     //Подключение кнопки выбора режима игры по сети и лямбда для неё
     auto chooseOnlineBtnLambda{
         [this] {
+            m_menuClick->play();
             m_centralStack->setCurrentIndex(
                 static_cast<int>(Page::ChooseHostOrClient));
             setWindowTitle("Морской бой -> Игра по сети");
@@ -358,6 +363,7 @@ MainWindow::MainWindow()
     //сети и лямбда для неё
     auto fromHostOrOnlineToMainBtnLambda{
         [this] {
+            m_menuClick->play();
             m_centralStack->setCurrentIndex(
                 static_cast<int>(Page::Main));
             setWindowTitle("Морской бой");
@@ -370,6 +376,7 @@ MainWindow::MainWindow()
     //Подключение кнопки завершения расстановки кораблей и лямбда для неё
     auto readyBtnLambda{
         [this] {
+            m_menuClick->play();
             switch (m_gameVariant)
             {
             case GameVariant::Local:
@@ -445,6 +452,7 @@ MainWindow::MainWindow()
 
     auto chooseClientBtnLambda{
         [this] {
+            m_menuClick->play();
             m_client = new Client{ this };
             connect(m_client, &Client::dataSignal, this, &MainWindow::dataSlot);
 
@@ -462,6 +470,7 @@ MainWindow::MainWindow()
 
     auto chooseHostBtnLambda{
         [this] {
+            m_menuClick->play();
             m_server = new Server{ this };
             connect(m_server, &Server::dataSignal, this, &MainWindow::dataSlot);
 

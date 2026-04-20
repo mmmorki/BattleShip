@@ -6,5 +6,6 @@
         <file>sounds/drop_the_bomb(destroy).wav</file>
         <file>sounds/defeat.wav</file>
         <file>sounds/victory.wav</file>
+        <file>sounds/menu_click.wav</file>
     </qresource>
 </RCC>
