@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include <QTcpSocket>
+#include <QNetworkInterface>
 
 Server::Server(QObject* parent)
     : QTcpServer(parent)

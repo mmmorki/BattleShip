@@ -16,7 +16,7 @@ public slots:
     void readyReadSlot();
 
 public:
-    explicit Client(QObject* parent = nullptr);
+    explicit Client(const QString& hostAddress, QObject* parent = nullptr);
 
     void send(const int identifier, const int row, const int col);
 

@@ -13,6 +13,7 @@
 #include <QMessageBox>
 #include <QTcpSocket>
 #include <QSoundEffect>
+#include <QLineEdit>
 
 void MainWindow::shotsAreOverSlot()
 {
@@ -255,6 +256,11 @@ MainWindow::MainWindow()
     , m_defeat{ new QSoundEffect{ this } }
     , m_victory{ new QSoundEffect{ this } }
     , m_menuClick{ new QSoundEffect{ this } }
+    , m_chooseAddressPage{ new QWidget{ this } }
+    , m_chooseAddressLine{ new QLineEdit{ "127.0.0.1", this } }
+    , m_chooseAddressLabel{ new QLabel{ "Введите ip-адрес хоста:", this } }
+    , m_chooseAddressBtn{ new QPushButton{ "Подключиться", this } }
+    , m_chooseAddressLayout{ new QVBoxLayout{ this } }
 {
     connect(m_firstPlayerField, &PlayerField::playerClickCellOnlineSignal,
         this, &MainWindow::playerClickCellOnlineSlot);
@@ -308,12 +314,6 @@ MainWindow::MainWindow()
     secondFieldPolicy.setRetainSizeWhenHidden(true);
     m_secondPlayerField->setSizePolicy(secondFieldPolicy);
 
-    //Настройка m_connectingPage
-    m_centralStack->insertWidget(4, m_connectingPage);
-    m_connectingPage->setLayout(m_connectingPageLayout);
-    m_connectingPageLayout->addWidget(m_connectingLabel, 0, 0, 1, 1);
-    m_connectingLabel->setAlignment(Qt::AlignCenter);
-
     //Настройка m_gamePage
     m_centralStack->insertWidget(3, m_gamePage);
     m_gamePage->setLayout(m_gamePageLayout);
@@ -321,6 +321,19 @@ MainWindow::MainWindow()
     m_gamePageLayout->addWidget(m_secondPlayerHiddenField, 1, 1, 1, 1);
     m_gamePageLayout->addWidget(m_whoseTurnLabel, 0, 0, 1, 2);
     m_whoseTurnLabel->setAlignment(Qt::AlignCenter);
+
+    //Настройка m_connectingPage
+    m_centralStack->insertWidget(4, m_connectingPage);
+    m_connectingPage->setLayout(m_connectingPageLayout);
+    m_connectingPageLayout->addWidget(m_connectingLabel, 0, 0, 1, 1);
+    m_connectingLabel->setAlignment(Qt::AlignCenter);
+
+    //Настройка m_chooseAddressPage
+    m_centralStack->insertWidget(5, m_chooseAddressPage);
+    m_chooseAddressPage->setLayout(m_chooseAddressLayout);
+    m_chooseAddressLayout->insertWidget(0, m_chooseAddressLabel);
+    m_chooseAddressLayout->insertWidget(1, m_chooseAddressLine);
+    m_chooseAddressLayout->insertWidget(2, m_chooseAddressBtn);
 
     //Подключения кнопки выбора локального режима игры и лямбда для неё
     auto chooseLocalBtnLambda{
@@ -440,20 +453,28 @@ MainWindow::MainWindow()
     connect(m_secondPlayerHiddenField, &OpponentField::allShipsAreDestroyedSignal,
         this, &MainWindow::allShipsAreDestroyedSlot);
 
-    auto chooseClientBtnLambda{
+    auto chooseAddressBtnLambda{
         [this] {
             m_menuClick->play();
-            m_client = new Client{ this };
+            m_client = new Client{ m_chooseAddressLine->text(), this };
             connect(m_client, &Client::dataSignal, this, &MainWindow::dataSlot);
-
             m_centralStack->setCurrentIndex(static_cast<int>(Page::Connecting));
-            setWindowTitle("Морской бой -> Игра по сети -> Ожидание подключения");
-            m_gameVariant = GameVariant::Client;
+
             m_firstPlayerField->setSendToOnline();
             m_secondPlayerHiddenField->sendToOnline();
             m_firstPlayerHiddenField->getFromOnline();
 
             dataSlot(0, 0, 1);
+        }
+    };
+    connect(m_chooseAddressBtn, &QPushButton::clicked, chooseAddressBtnLambda);
+
+    auto chooseClientBtnLambda{
+        [this] {
+            m_menuClick->play();
+            m_centralStack->setCurrentIndex(static_cast<int>(Page::ChooseAddress));
+            setWindowTitle("Морской бой -> Игра по сети -> Подключение к хосту");
+            m_gameVariant = GameVariant::Client;
         }
     };
     connect(m_chooseClientBtn, &QPushButton::clicked, chooseClientBtnLambda);
@@ -516,4 +537,6 @@ void MainWindow::endGame()
     m_secondPlayerField->clear();
     m_firstPlayerHiddenField->clear();
     m_secondPlayerHiddenField->clear();
+
+    m_gameVariant = GameVariant::None;
 }
