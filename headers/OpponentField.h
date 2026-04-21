@@ -42,6 +42,8 @@ public:
 
     void clickCellOnlineFunc(const int row, const int col);
 
+    void showShips() const;
+
 private:
     bool m_canShot{};
     int m_shipCellsLeft{};

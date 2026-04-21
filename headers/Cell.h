@@ -27,6 +27,8 @@ public:
 
     void hideCell();
 
+    void showCell();
+
     void removeShip();
 
     void setDestroyed();

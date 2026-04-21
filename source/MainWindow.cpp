@@ -515,12 +515,14 @@ void MainWindow::startGame()
         setWindowTitle("Морской бой -> Игра по сети (сервер) -> Бой");
         m_secondPlayerHiddenField->activate();
         m_whoseTurnLabel->setText("Ваш ход");
+        m_firstPlayerHiddenField->showShips();
     }
 
     else
     {
         setWindowTitle("Морской бой -> Игра по сети (клиент) -> Бой");
         m_whoseTurnLabel->setText("Ход противника");
+        m_firstPlayerHiddenField->showShips();
     }
 }
 

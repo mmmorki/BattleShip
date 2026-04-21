@@ -127,3 +127,10 @@ void Cell::leaveEvent(QEvent* event)
     emit leaveCellSignal(m_row, m_col);
     QPushButton::leaveEvent(event);
 }
+
+void Cell::showCell()
+{
+    m_currentStyle->clear();
+    m_currentStyle->append("background-color: black; border: 1px solid black");
+    setStyleSheet(*m_currentStyle);
+}
