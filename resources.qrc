@@ -7,5 +7,6 @@
         <file>sounds/defeat.wav</file>
         <file>sounds/victory.wav</file>
         <file>sounds/menu_click.wav</file>
+        <file>sounds/main_theme_1(DOOM).mp3</file>
     </qresource>
 </RCC>

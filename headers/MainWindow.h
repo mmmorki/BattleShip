@@ -19,6 +19,8 @@ class QMessageBox;
 class QTcpSocket;
 class QSoundEffect;
 class QLineEdit;
+class QMediaPlayer;
+class QAudioOutput;
 
 class MainWindow final : public QMainWindow
 {
@@ -102,12 +104,13 @@ private:
     QSoundEffect* m_defeat{ nullptr };
     QSoundEffect* m_victory{ nullptr };
     QSoundEffect* m_menuClick{ nullptr };
-
     QWidget* m_chooseAddressPage{ nullptr };
     QLineEdit* m_chooseAddressLine{ nullptr };
     QLabel* m_chooseAddressLabel{ nullptr };
     QPushButton* m_chooseAddressBtn{ nullptr };
     QVBoxLayout* m_chooseAddressLayout{ nullptr };
+    QMediaPlayer* m_themeAudioPlayer{ nullptr };
+    QAudioOutput* m_themeAudioOutput{ nullptr };
 };
 
 #endif //MAINWINDOW_H

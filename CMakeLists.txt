@@ -72,3 +72,22 @@ if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
                 "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
     endforeach (QT_LIB)
 endif ()
+
+if (EXISTS "${QT_INSTALL_PATH}/plugins/multimedia")
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/multimedia/")
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${QT_INSTALL_PATH}/plugins/multimedia"
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/multimedia/")
+endif()
+
+foreach(FFMPEG_LIB avcodec-61 avformat-61 avutil-59 swresample-5 swscale-8)
+    if(EXISTS "${QT_INSTALL_PATH}/bin/${FFMPEG_LIB}.dll")
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                "${QT_INSTALL_PATH}/bin/${FFMPEG_LIB}.dll"
+                "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
+    endif()
+endforeach()

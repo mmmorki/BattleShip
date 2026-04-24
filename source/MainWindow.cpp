@@ -14,6 +14,8 @@
 #include <QTcpSocket>
 #include <QSoundEffect>
 #include <QLineEdit>
+#include <QMediaPlayer>
+#include <QAudioOutput>
 
 void MainWindow::shotsAreOverSlot()
 {
@@ -261,6 +263,8 @@ MainWindow::MainWindow()
     , m_chooseAddressLabel{ new QLabel{ "Введите ip-адрес хоста:", this } }
     , m_chooseAddressBtn{ new QPushButton{ "Подключиться", this } }
     , m_chooseAddressLayout{ new QVBoxLayout{ this } }
+    , m_themeAudioPlayer{ new QMediaPlayer{ this } }
+    , m_themeAudioOutput{ new QAudioOutput{ this } }
 {
     connect(m_firstPlayerField, &PlayerField::playerClickCellOnlineSignal,
         this, &MainWindow::playerClickCellOnlineSlot);
@@ -278,6 +282,11 @@ MainWindow::MainWindow()
     m_victory->setVolume(0.5);
     m_menuClick->setSource(QUrl("qrc:/sounds/menu_click.wav"));
     m_menuClick->setVolume(0.5);
+    m_themeAudioOutput->setVolume(0.03);
+    m_themeAudioPlayer->setAudioOutput(m_themeAudioOutput);
+    m_themeAudioPlayer->setSource(QUrl("qrc:/sounds/main_theme_1(DOOM).mp3"));
+    m_themeAudioPlayer->setLoops(QMediaPlayer::Infinite);
+    m_themeAudioPlayer->play();
 
     //Настройка окна
     setFixedSize(1000, 500);
