@@ -8,5 +8,8 @@
         <file>sounds/victory.wav</file>
         <file>sounds/menu_click.wav</file>
         <file>sounds/main_theme_1(DOOM).mp3</file>
+        <file>sounds/create_a_ship.wav</file>
+        <file>sounds/change_add_orientation.wav</file>
+        <file>sounds/change_a_ship.wav</file>
     </qresource>
 </RCC>

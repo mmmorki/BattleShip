@@ -4,6 +4,7 @@
 
 #include <QGridLayout>
 #include <QHBoxLayout>
+#include <QSoundEffect>
 
 #include <array>
 #include <vector>
@@ -41,6 +42,7 @@ void PlayerField::clickCellSlot(const int row, const int col)
 
     if (m_cellData[row][col]->isShip())
     {
+        m_createAShip->play();
         const int removedShipCellsCounter{ removeShipByCoord(row, col) };
         --m_shipsLeft[removedShipCellsCounter - 1];
         return;
@@ -52,6 +54,7 @@ void PlayerField::clickCellSlot(const int row, const int col)
     const int length{ static_cast<int>(m_addMode) };
     std::vector<std::pair<int, int>> shipsToBind{};
     shipsToBind.reserve(length  + 1);
+    m_createAShip->play();
 
     if (m_addOrientation == AddOrientation::Vertical)
     {
@@ -81,7 +84,17 @@ PlayerField::PlayerField(QWidget* parent)
     , m_addShip3Btn{ new QPushButton{ "Фрегат", this } }
     , m_addShip4Btn{ new QPushButton{ "Линкор", this } }
     , m_changeOrientationBtn{ new QPushButton{ "Направление", this } }
+    , m_createAShip{ new QSoundEffect{ this } }
+    , m_changeAddOrientation{ new QSoundEffect{ this } }
+    , m_changeAShip{ new QSoundEffect{ this } }
 {
+    m_createAShip->setSource(QUrl("qrc:/sounds/create_a_ship.wav"));
+    m_createAShip->setVolume(0.1);
+    m_changeAddOrientation->setSource(QUrl("qrc:/sounds/change_add_orientation.wav"));
+    m_changeAddOrientation->setVolume(0.3);
+    m_changeAShip->setSource(QUrl("qrc:/sounds/change_a_ship.wav"));
+    m_changeAShip->setVolume(0.3);
+
     m_layout->addLayout(m_addShipBtnLayout, 10, 0, 1, 10);
     m_addShipBtnLayout->addWidget(m_addShip1Btn);
     m_addShipBtnLayout->addWidget(m_addShip2Btn);
@@ -101,6 +114,8 @@ PlayerField::PlayerField(QWidget* parent)
 
     auto changeOrientationBtnLambda{
         [this] {
+            m_changeAddOrientation->play();
+
             if (m_addOrientation == AddOrientation::Vertical)
             {
                 m_addOrientation = AddOrientation::Horizontal;
@@ -119,6 +134,7 @@ PlayerField::PlayerField(QWidget* parent)
 
     auto chooseShip1BtnLambda{
         [this] {
+            m_changeAddOrientation->play();
             m_addMode = AddMode::Ship1;
             if (m_sendToOnline)
                 emit playerChangeShipVariantSignal(0);
@@ -127,6 +143,7 @@ PlayerField::PlayerField(QWidget* parent)
 
     auto chooseShip2BtnLambda{
         [this] {
+            m_changeAddOrientation->play();
             m_addMode = AddMode::Ship2;
             if (m_sendToOnline)
                 emit playerChangeShipVariantSignal(1);
@@ -135,6 +152,7 @@ PlayerField::PlayerField(QWidget* parent)
 
     auto chooseShip3BtnLambda{
         [this] {
+            m_changeAddOrientation->play();
             m_addMode = AddMode::Ship3;
             if (m_sendToOnline)
                 emit playerChangeShipVariantSignal(2);
@@ -143,6 +161,7 @@ PlayerField::PlayerField(QWidget* parent)
 
     auto chooseShip4BtnLambda{
         [this] {
+            m_changeAddOrientation->play();
             m_addMode = AddMode::Ship4;
             if (m_sendToOnline)
                 emit playerChangeShipVariantSignal(3);
