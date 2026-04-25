@@ -5,6 +5,7 @@ class OpponentField;
 
 class QHBoxLayout;
 class QPushButton;
+class QSoundEffect;
 
 #include "Field.h"
 
@@ -80,6 +81,9 @@ private:
     QPushButton* m_addShip4Btn{ nullptr };
     QPushButton* m_changeOrientationBtn{ nullptr };
     bool m_sendToOnline{ false };
+    QSoundEffect* m_createAShip{ nullptr };
+    QSoundEffect* m_changeAddOrientation{ nullptr };
+    QSoundEffect* m_changeAShip{ nullptr };
 };
 
 #endif //NEWPLAYERFIELD_H
