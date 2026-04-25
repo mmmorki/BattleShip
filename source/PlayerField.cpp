@@ -357,16 +357,6 @@ void PlayerField::clear()
     showShipButtons();
 }
 
-void PlayerField::hideShips() const
-{
-    for (std::size_t row{ 0 }; row < 10; ++row)
-        for (std::size_t col{ 0 }; col < 10; ++col)
-        {
-            if (m_cellData[row][col]->isShip())
-                m_cellData[row][col]->hideCell();
-        }
-}
-
 void PlayerField::setSendToOnline()
 {
     m_sendToOnline = true;

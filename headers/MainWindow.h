@@ -28,7 +28,7 @@ class MainWindow final : public QMainWindow
 private slots:
     void shotsAreOverSlot();
     void allShipsAreDestroyedSlot();
-    void dataSlot(const int identifier, const int col, const int row);
+    void dataSlot(const int identifier, const int row, const int col);
     //Слоты для онлайн режима
     void playerClickCellOnlineSlot(const int row, const int col);
     void playerChangeShipVariantSlot(const int ID);

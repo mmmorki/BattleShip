@@ -4,6 +4,7 @@
 #include <QObject>
 
 class QTcpSocket;
+class QTimer;
 
 class Client final : public QObject
 {
@@ -30,6 +31,7 @@ private:
     QByteArray m_byteArray{};
     bool m_isReady{ false };
     quint16 m_nextBlockSize{ 0 };
+    QTimer* m_connectTimer{ nullptr };
 };
 
 #endif //CLIENT_H

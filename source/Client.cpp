@@ -1,12 +1,31 @@
 #include "Client.h"
 
+#include <iostream>
+
 #include <QTcpSocket>
+#include <QTimer>
 
 Client::Client(const QString& hostAddress, QObject* parent)
     : QObject(parent)
     , m_socket{ new QTcpSocket{ this } }
+    , m_connectTimer{ new QTimer{ this } }
 {
     m_socket->connectToHost(hostAddress, 2323);
+
+    m_connectTimer->setInterval(1000);
+    auto timerLambda{
+        [this] {
+            std::cerr << "Connection is not established" <<std::endl;
+
+            if (m_socket->state() == QTcpSocket::ConnectedState)
+            {
+                send(0, 0, 1);
+                m_connectTimer->stop();
+            }
+        }
+    };
+    connect(m_connectTimer, &QTimer::timeout, timerLambda);
+    m_connectTimer->start();
 
     connect(m_socket, &QTcpSocket::readyRead, this, &Client::readyReadSlot);
     connect(m_socket, &QTcpSocket::disconnected, m_socket, &QTcpSocket::deleteLater);

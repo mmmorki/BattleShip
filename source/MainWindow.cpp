@@ -16,90 +16,107 @@
 #include <QSoundEffect>
 #include <QLineEdit>
 
+/* Слот для принятия сигнала исчерпывания у игрока возможности стрелять.
+ * Для локального режима игры просто меняем переменную перечисления хода,
+ * активируем другое поле и меняем надпись.
+ * Для режима игры по сети отправляем сигнал (0, 0, 3), который активирует поле
+ * противника у оппонента и меняем надпись. */
 void MainWindow::shotsAreOverSlot()
 {
     switch (m_gameVariant)
     {
-        case GameVariant::Local:
+    case GameVariant::Local:
+    {
+        switch (m_turn)
         {
-            switch (m_turn)
-            {
-                case Turn::Player1:
-                {
-                    m_firstPlayerHiddenField->activate();
-                    m_turn = Turn::Player2;
-                    m_whoseTurnLabel->setText("Ход Player2");
-                    return;
-                }
-                case Turn::Player2:
-                    m_secondPlayerHiddenField->activate();
-                    m_turn = Turn::Player1;
-                    m_whoseTurnLabel->setText("Ход Player1");
-                    return;
-                default: return;
-            }
-        }
-        case GameVariant::Server:
+        case Turn::Player1:
         {
-            m_server->send(0, 0, 3);
-            m_whoseTurnLabel->setText("Ход противника");
+            m_firstPlayerHiddenField->activate();
+            m_turn = Turn::Player2;
+            m_whoseTurnLabel->setText("Ход Player2");
             return;
         }
-        case GameVariant::Client:
+        case Turn::Player2:
         {
-            m_client->send(0, 0, 3);
-            m_whoseTurnLabel->setText("Ход противника");
-            return;
+            m_secondPlayerHiddenField->activate();
+            m_turn = Turn::Player1;
+            m_whoseTurnLabel->setText("Ход Player1");
         }
-        default: return;
+        default:return;
+        }
+    }
+    case GameVariant::Server:
+    {
+        m_server->send(0, 0, 3);
+        m_whoseTurnLabel->setText("Ход противника");
+        return;
+    }
+    case GameVariant::Client:
+    {
+        m_client->send(0, 0, 3);
+        m_whoseTurnLabel->setText("Ход противника");
+    }
+    default:;
     }
 }
 
+/* Слот для принятия сигнала уничтожения всех кораблей противника и победы
+ * текущего игрока.
+ * Для локального режима игры выводим информацию о том, кто выиграл.
+ * Для режима игры по сети отправляем сигнал (0, 0, 4), который воспроизводит у
+ * противника звук поражения и выводит информацию о поражении, воспроизводим
+ * сигнал победы и выводим информацию о победе.
+ * Затем запускаем функцию завершения игры. */
 void MainWindow::allShipsAreDestroyedSlot()
 {
     switch (m_gameVariant)
     {
-        case GameVariant::Local:
+    case GameVariant::Local:
+    {
+        switch (m_turn)
         {
-            switch (m_turn)
-            {
-                case Turn::Player1:
-                {
-                    QMessageBox::information(this, " ", "Player1 выиграл");
-                    break;
-                }
-                case Turn::Player2:
-                    QMessageBox::information(this, " ", "Player2 выиграл");
-                default:;
-            }
+        case Turn::Player1:
+        {
+            QMessageBox::information(this, " ", "Player1 выиграл");
             break;
         }
-        case GameVariant::Server:
-        {
-            m_server->send(0, 0, 4);
-            m_victory->play();
-            QMessageBox::information(this, " ", "Вы выиграли");
-            break;
-        }
-        case GameVariant::Client:
-        {
-            m_client->send(0, 0, 4);
-            m_victory->play();
-            QMessageBox::information(this, " ", "Вы выиграли");
-        }
+        case Turn::Player2:
+            QMessageBox::information(this, " ", "Player2 выиграл");
         default:;
+        }
+        break;
+    }
+    case GameVariant::Server:
+    {
+        m_server->send(0, 0, 4);
+        m_victory->play();
+        QMessageBox::information(this, " ", "Вы выиграли");
+        break;
+    }
+    case GameVariant::Client:
+    {
+        m_client->send(0, 0, 4);
+        m_victory->play();
+        QMessageBox::information(this, " ", "Вы выиграли");
+    }
+    default:;
     }
 
     endGame();
 }
 
+// Слот для принятия сигналов от оппонента при игре по сети
 void MainWindow::dataSlot(const int identifier, const int row, const int col)
 {
+    // Отладочная информация о входящем от оппонента сигнале
     std::cerr << "incoming signal: " << identifier << ", " << row << ", " << col
     << std::endl;
 
     if (identifier == 0)
     {
+        /* (0, 0, 0) - Оппонент готов. Если текущий игрок тоже готов, то
+         * оппоненту отправляется сигнал (0, 0, 2) и запускается функция
+         * начала боя. Меняется надпись о готовности оппонента. */
         if (row == 0 && col == 0)
         {
             m_readyLabel->setText("Противник готов");
@@ -117,6 +134,9 @@ void MainWindow::dataSlot(const int identifier, const int row, const int col)
             }
         }
 
+        /* (0, 0, 1) - Оппонент установил соединение с игроком. Переключение на
+         * страницу расстановки кораблей, скрытие поля расстановки оппонента и
+         * отображение поля расстановки текущего игрока. */
         else if (row == 0 && col == 1)
         {
             m_centralStack->setCurrentIndex(static_cast<int>(Page::Prepare));
@@ -124,23 +144,33 @@ void MainWindow::dataSlot(const int identifier, const int row, const int col)
             m_secondPlayerField->hide();
         }
 
+        /* (0, 0, 2) - Оппонент подтверждает свою готовность после того, как
+         * текущий игрок отправил сигнал о своей готовности (0, 0, 0), после
+         * чего запускается функция начал боя. */
         else if (row == 0 && col == 2)
             startGame();
 
+        /* (0, 0, 3) - Оппонент завершил свой ход исчерпыванием возможности
+         * атаковать. Происходит активация поля противника у текущего игрока и
+         * сменяется надпись хода. */
         else if (row == 0 && col == 3)
         {
             m_secondPlayerHiddenField->activate();
             m_whoseTurnLabel->setText("Ваш ход");
         }
 
+        /* (0, 0, 4) - Оппонент завершил свой ход полным уничтожением кораблей
+         * текущего игрока. У текущего игрока проигрывается звук поражения,
+         * выводится информация о проигрыше и запускается функция завершения
+         * боя. */
         else if (row == 0 && col == 4)
         {
             m_defeat->play();
             QMessageBox::information(this, " ", "Вы проиграли");
-
             endGame();
         }
     }
+
 
     else if (identifier == 1)
         m_secondPlayerField->clickCellOnlineFunc(row, col);
@@ -264,6 +294,8 @@ MainWindow::MainWindow()
     , m_chooseAddressLayout{ new QVBoxLayout{ this } }
     , m_themeMusicManager{ new ThemeMusicManager{ this } }
 {
+    //Подключение сигналов кнопок смены кораблей и смены ориентации расстановки
+    //кораблей
     connect(m_firstPlayerField, &PlayerField::playerClickCellOnlineSignal,
         this, &MainWindow::playerClickCellOnlineSlot);
     connect(m_firstPlayerField, &PlayerField::playerChangeShipVariantSignal,
@@ -272,6 +304,16 @@ MainWindow::MainWindow()
         this, &MainWindow::playerChangeOrientationSlot);
     connect(m_secondPlayerHiddenField, &OpponentField::playerClickCellOnlineSignal,
         this, &MainWindow::playerClickCellOnlineSlotOpponent);
+
+    //Подключение сигналов сценариев завершения хода
+    connect(m_firstPlayerHiddenField, &OpponentField::shotsAreOverSignal,
+        this, &MainWindow::shotsAreOverSlot);
+    connect(m_secondPlayerHiddenField, &OpponentField::shotsAreOverSignal,
+        this, &MainWindow::shotsAreOverSlot);
+    connect(m_firstPlayerHiddenField, &OpponentField::allShipsAreDestroyedSignal,
+        this, &MainWindow::allShipsAreDestroyedSlot);
+    connect(m_secondPlayerHiddenField, &OpponentField::allShipsAreDestroyedSignal,
+        this, &MainWindow::allShipsAreDestroyedSlot);
 
     //Настройка звуков
     m_defeat->setSource(QUrl("qrc:/sounds/events/defeat.wav"));
@@ -447,15 +489,7 @@ MainWindow::MainWindow()
     };
     connect(m_readyBtn, &QPushButton::clicked, readyBtnLambda);
 
-    connect(m_firstPlayerHiddenField, &OpponentField::shotsAreOverSignal,
-        this, &MainWindow::shotsAreOverSlot);
-    connect(m_secondPlayerHiddenField, &OpponentField::shotsAreOverSignal,
-        this, &MainWindow::shotsAreOverSlot);
-    connect(m_firstPlayerHiddenField, &OpponentField::allShipsAreDestroyedSignal,
-        this, &MainWindow::allShipsAreDestroyedSlot);
-    connect(m_secondPlayerHiddenField, &OpponentField::allShipsAreDestroyedSignal,
-        this, &MainWindow::allShipsAreDestroyedSlot);
-
+    //Подключение кнопки подтверждения ввода ip-адреса и лямбда для неё
     auto chooseAddressBtnLambda{
         [this] {
             m_menuClick->play();
@@ -467,11 +501,12 @@ MainWindow::MainWindow()
             m_secondPlayerHiddenField->sendToOnline();
             m_firstPlayerHiddenField->getFromOnline();
 
-            dataSlot(0, 0, 1);
+            //dataSlot(0, 0, 1);
         }
     };
     connect(m_chooseAddressBtn, &QPushButton::clicked, chooseAddressBtnLambda);
 
+    //Подключение кнопки выбора способа подключения как клиента и лямбда для неё
     auto chooseClientBtnLambda{
         [this] {
             m_menuClick->play();
@@ -482,6 +517,7 @@ MainWindow::MainWindow()
     };
     connect(m_chooseClientBtn, &QPushButton::clicked, chooseClientBtnLambda);
 
+    //Подключение кнопки выбора способа подключения как хоста и лямбда для неё
     auto chooseHostBtnLambda{
         [this] {
             m_menuClick->play();
@@ -499,13 +535,18 @@ MainWindow::MainWindow()
     connect(m_chooseHostBtn, &QPushButton::clicked, chooseHostBtnLambda);
 }
 
+//Функция старта игры после завершения расстановки кораблей
 void MainWindow::startGame()
 {
+    //Переключение на виджет непосредственно боя
     m_centralStack->setCurrentIndex(static_cast<int>(Page::Game));
 
+    //Перенос кораблей с полей расстановки на поля боя
     m_firstPlayerField->transferShipsTo(m_firstPlayerHiddenField);
     m_secondPlayerField->transferShipsTo(m_secondPlayerHiddenField);
 
+    //Если режим игры локальный, то меняем название окна, активируем второе поле
+    //боя (ход первого игрока), и обозначаем ход Player1
     if (m_gameVariant == GameVariant::Local)
     {
         setWindowTitle("Морской бой -> Локальная игра -> Бой");
@@ -513,6 +554,9 @@ void MainWindow::startGame()
         m_whoseTurnLabel->setText("Ход Player1");
     }
 
+    //Если режим игры по сети и способ подключения - хост, то меняем название
+    //окна, активируем второе поле (ход игрока-хоста) и показываем свои корабли
+    //на своём поле
     else if (m_gameVariant == GameVariant::Server)
     {
         setWindowTitle("Морской бой -> Игра по сети (сервер) -> Бой");
@@ -521,6 +565,9 @@ void MainWindow::startGame()
         m_firstPlayerHiddenField->showShips();
     }
 
+    //Если режим игры по сети и способ подключения - клиент, то меняем название
+    //окна и показываем свои корабли на своём поле. Второе поле не активируется,
+    //так как первым ходит игрок-хост
     else
     {
         setWindowTitle("Морской бой -> Игра по сети (клиент) -> Бой");
@@ -529,19 +576,24 @@ void MainWindow::startGame()
     }
 }
 
+//Функция завершения игры после боя
 void MainWindow::endGame()
 {
+    //Удаляем слоты подключения в режиме игры по сети
     delete m_server;
     delete m_client;
 
+    //Сбрасываем режим игры
+    m_gameVariant = GameVariant::None;
+
     m_readyLabel->setText("Противник не готов");
 
+    //Переключаемся обратно на главный виджет
     m_centralStack->setCurrentIndex(static_cast<int>(Page::Main));
 
+    //Очищаем игровые поля
     m_firstPlayerField->clear();
     m_secondPlayerField->clear();
     m_firstPlayerHiddenField->clear();
     m_secondPlayerHiddenField->clear();
-
-    m_gameVariant = GameVariant::None;
 }

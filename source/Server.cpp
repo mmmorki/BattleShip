@@ -34,7 +34,7 @@ void Server::incomingConnection(qintptr socketDescriptor)
     connect(m_client, &QTcpSocket::readyRead, this, &Server::readyReadSlot);
     connect(m_client, &QTcpSocket::disconnected, m_client, &QTcpSocket::deleteLater);
     std::cerr << "client connected" << std::endl;
-    emit dataSignal(0, 0, 1);
+    send(0, 0, 1);
 }
 
 bool Server::isReady() const
