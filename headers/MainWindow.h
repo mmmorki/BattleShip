@@ -2,7 +2,6 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QMessageBox>
 
 class PlayerField;
 class OpponentField;
@@ -21,21 +20,25 @@ class QSoundEffect;
 class QLineEdit;
 class ThemeMusicManager;
 
+//Класс окна приложения.
 class MainWindow final : public QMainWindow
 {
     Q_OBJECT
 
 private slots:
+    //Слоты для сигналов завершения ходов игрока.
     void shotsAreOverSlot();
     void allShipsAreDestroyedSlot();
+
+    //Слоты для режима игры по сети.
     void dataSlot(const int identifier, const int row, const int col);
-    //Слоты для онлайн режима
     void playerClickCellOnlineSlot(const int row, const int col);
     void playerChangeShipVariantSlot(const int ID);
     void playerChangeOrientationSlot(const int ID);
     void playerClickCellOnlineSlotOpponent(const int row, const int col);
 
 public:
+    //Перечисление для страниц приложения.
     enum class Page
     {
         Main,
@@ -46,6 +49,7 @@ public:
         ChooseAddress,
     };
 
+    //Перечисление для вариантов игры.
     enum class GameVariant
     {
         None,
@@ -54,6 +58,7 @@ public:
         Client,
     };
 
+    //Перечисление для ходов игроков.
     enum class Turn
     {
         None,
@@ -61,54 +66,77 @@ public:
         Player2,
     };
 
+    //Конструктор.
     explicit MainWindow();
 
+    //Деструктор по умолчанию.
     ~MainWindow() override = default;
 
+    //Функция начала боя после завершения расстановки кораблей.
     void startGame();
 
+    //Функция завершения боя.
     void endGame();
 
 private:
+    //Поля перечислений типа игры и хода.
     GameVariant m_gameVariant{ GameVariant::None };
     Turn m_turn{ Turn::None };
+
+    //Поля сокетов клиента и хоста для игры по сети.
+    Client* m_client{ nullptr };
+    Server* m_server{ nullptr };
+
+    //Поля для звуковых эффектов и фоновой музыки.
+    QSoundEffect* m_defeat{ nullptr };
+    QSoundEffect* m_victory{ nullptr };
+    QSoundEffect* m_menuClick{ nullptr };
+    ThemeMusicManager* m_themeMusicManager{ nullptr };
+
+    //Поля, необходимые для окна приложения.
     QWidget* m_central{ nullptr };
     QGridLayout* m_centralLayout{ nullptr };
     QStackedWidget* m_centralStack{ nullptr };
+
+    //Поля, необходимые для главной страницы приложения.
     QWidget* m_mainPage{ nullptr };
     QVBoxLayout* m_mainPageLayout{ nullptr };
     QPushButton* m_chooseLocalBtn{ nullptr };
     QPushButton* m_chooseOnlineBtn{ nullptr };
+
+    //Поля, необходимые для страницы выбора способа игры по сети.
     QWidget* m_hostOrClientPage{ nullptr };
     QVBoxLayout* m_hostOrClientPageLayout{ nullptr };
     QPushButton* m_chooseHostBtn{ nullptr };
     QPushButton* m_chooseClientBtn{ nullptr };
-    PlayerField* m_firstPlayerField{ nullptr };
-    OpponentField* m_firstPlayerHiddenField{ nullptr };
-    PlayerField* m_secondPlayerField{ nullptr };
-    OpponentField* m_secondPlayerHiddenField{ nullptr };
     QPushButton* m_fromHostOrOnlineToMainBtn{ nullptr };
-    QWidget* m_preparePage{ nullptr };
-    QGridLayout* m_preparePageLayout{ nullptr };
-    QPushButton* m_readyBtn{ nullptr };
-    QWidget* m_gamePage{ nullptr };
-    QGridLayout* m_gamePageLayout{ nullptr };
-    Client* m_client{ nullptr };
-    Server* m_server{ nullptr };
-    QLabel* m_readyLabel{ nullptr };
-    QWidget* m_connectingPage{ nullptr };
-    QGridLayout* m_connectingPageLayout{ nullptr };
-    QLabel* m_connectingLabel{ nullptr };
-    QLabel* m_whoseTurnLabel{ nullptr };
-    QSoundEffect* m_defeat{ nullptr };
-    QSoundEffect* m_victory{ nullptr };
-    QSoundEffect* m_menuClick{ nullptr };
+
+    //Поля, необходимые для страницы ввода ip-адреса хоста при игре как клиент.
     QWidget* m_chooseAddressPage{ nullptr };
     QLineEdit* m_chooseAddressLine{ nullptr };
     QLabel* m_chooseAddressLabel{ nullptr };
     QPushButton* m_chooseAddressBtn{ nullptr };
     QVBoxLayout* m_chooseAddressLayout{ nullptr };
-    ThemeMusicManager* m_themeMusicManager{ nullptr };
+
+    //Поля, необходимые для страницы ожидания подключения к оппоненту.
+    QWidget* m_connectingPage{ nullptr };
+    QGridLayout* m_connectingPageLayout{ nullptr };
+    QLabel* m_connectingLabel{ nullptr };
+
+    //Поля, необходимые для страницы расстановки кораблей.
+    QWidget* m_preparePage{ nullptr };
+    QGridLayout* m_preparePageLayout{ nullptr };
+    PlayerField* m_firstPlayerField{ nullptr };
+    PlayerField* m_secondPlayerField{ nullptr };
+    QPushButton* m_readyBtn{ nullptr };
+    QLabel* m_readyLabel{ nullptr };
+
+    //Поля, необходимые для страницы боя.
+    QWidget* m_gamePage{ nullptr };
+    QGridLayout* m_gamePageLayout{ nullptr };
+    OpponentField* m_firstPlayerHiddenField{ nullptr };
+    OpponentField* m_secondPlayerHiddenField{ nullptr };
+    QLabel* m_whoseTurnLabel{ nullptr };
 };
 
 #endif //MAINWINDOW_H
