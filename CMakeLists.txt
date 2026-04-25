@@ -24,6 +24,7 @@ add_executable(BattleShip source/main.cpp
         source/PlayerField.cpp
         source/Cell.cpp
         source/Client.cpp
+        source/ThemeMusicManager.cpp
         headers/Cell.h
         headers/Field.h
         headers/OpponentField.h
@@ -31,6 +32,7 @@ add_executable(BattleShip source/main.cpp
         headers/MainWindow.h
         headers/Server.h
         headers/Client.h
+        headers/ThemeMusicManager.h
         resources.qrc)
 
 target_include_directories(BattleShip PRIVATE

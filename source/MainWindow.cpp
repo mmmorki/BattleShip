@@ -3,6 +3,7 @@
 #include "OpponentField.h"
 #include "Server.h"
 #include "Client.h"
+#include "ThemeMusicManager.h"
 
 #include <iostream>
 
@@ -14,8 +15,6 @@
 #include <QTcpSocket>
 #include <QSoundEffect>
 #include <QLineEdit>
-#include <QMediaPlayer>
-#include <QAudioOutput>
 
 void MainWindow::shotsAreOverSlot()
 {
@@ -263,8 +262,7 @@ MainWindow::MainWindow()
     , m_chooseAddressLabel{ new QLabel{ "Введите ip-адрес хоста:", this } }
     , m_chooseAddressBtn{ new QPushButton{ "Подключиться", this } }
     , m_chooseAddressLayout{ new QVBoxLayout{ this } }
-    , m_themeAudioPlayer{ new QMediaPlayer{ this } }
-    , m_themeAudioOutput{ new QAudioOutput{ this } }
+    , m_themeMusicManager{ new ThemeMusicManager{ this } }
 {
     connect(m_firstPlayerField, &PlayerField::playerClickCellOnlineSignal,
         this, &MainWindow::playerClickCellOnlineSlot);
@@ -276,17 +274,13 @@ MainWindow::MainWindow()
         this, &MainWindow::playerClickCellOnlineSlotOpponent);
 
     //Настройка звуков
-    m_defeat->setSource(QUrl("qrc:/sounds/defeat.wav"));
+    m_defeat->setSource(QUrl("qrc:/sounds/events/defeat.wav"));
     m_defeat->setVolume(0.5);
-    m_victory->setSource(QUrl("qrc:/sounds/victory.wav"));
+    m_victory->setSource(QUrl("qrc:/sounds/events/victory.wav"));
     m_victory->setVolume(0.5);
-    m_menuClick->setSource(QUrl("qrc:/sounds/menu_click.wav"));
+    m_menuClick->setSource(QUrl("qrc:/sounds/events/menu_click.wav"));
     m_menuClick->setVolume(0.5);
-    m_themeAudioOutput->setVolume(0.03);
-    m_themeAudioPlayer->setAudioOutput(m_themeAudioOutput);
-    m_themeAudioPlayer->setSource(QUrl("qrc:/sounds/main_theme_1(DOOM).mp3"));
-    m_themeAudioPlayer->setLoops(QMediaPlayer::Infinite);
-    m_themeAudioPlayer->play();
+    m_themeMusicManager->playNext();
 
     //Настройка окна
     setFixedSize(1000, 500);

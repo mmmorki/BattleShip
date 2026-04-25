@@ -1,15 +1,17 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
     <qresource>
-        <file>sounds/drop_the_bomb(miss).wav</file>
-        <file>sounds/drop_the_bomb(hit).wav</file>
-        <file>sounds/drop_the_bomb(destroy).wav</file>
-        <file>sounds/defeat.wav</file>
-        <file>sounds/victory.wav</file>
-        <file>sounds/menu_click.wav</file>
-        <file>sounds/main_theme_1(DOOM).mp3</file>
-        <file>sounds/create_a_ship.wav</file>
-        <file>sounds/change_add_orientation.wav</file>
-        <file>sounds/change_a_ship.wav</file>
+        <file>sounds/events/drop_the_bomb(miss).wav</file>
+        <file>sounds/events/drop_the_bomb(hit).wav</file>
+        <file>sounds/events/drop_the_bomb(destroy).wav</file>
+        <file>sounds/events/defeat.wav</file>
+        <file>sounds/events/victory.wav</file>
+        <file>sounds/events/menu_click.wav</file>
+        <file>sounds/events/create_a_ship.wav</file>
+        <file>sounds/events/change_add_orientation.wav</file>
+        <file>sounds/events/change_a_ship.wav</file>
+
+        <file>sounds/themes/main_theme_DOOM1.mp3</file>
+        <file>sounds/themes/main_theme_ICEGERGERT.mp3</file>
     </qresource>
 </RCC>

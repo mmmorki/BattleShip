@@ -19,8 +19,7 @@ class QMessageBox;
 class QTcpSocket;
 class QSoundEffect;
 class QLineEdit;
-class QMediaPlayer;
-class QAudioOutput;
+class ThemeMusicManager;
 
 class MainWindow final : public QMainWindow
 {
@@ -109,8 +108,7 @@ private:
     QLabel* m_chooseAddressLabel{ nullptr };
     QPushButton* m_chooseAddressBtn{ nullptr };
     QVBoxLayout* m_chooseAddressLayout{ nullptr };
-    QMediaPlayer* m_themeAudioPlayer{ nullptr };
-    QAudioOutput* m_themeAudioOutput{ nullptr };
+    ThemeMusicManager* m_themeMusicManager{ nullptr };
 };
 
 #endif //MAINWINDOW_H
