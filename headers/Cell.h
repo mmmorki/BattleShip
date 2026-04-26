@@ -61,7 +61,7 @@ private:
     int m_col{};
     bool m_isShip{};
     bool m_isChecked{};
-    QString* m_currentStyle{ nullptr };
+    QString m_currentStyle{};
     Cell* m_nextShipCellPtr{ nullptr };
 };
 
