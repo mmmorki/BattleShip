@@ -32,10 +32,10 @@ private slots:
 
     //Слоты для режима игры по сети.
     void dataSlot(const int identifier, const int row, const int col);
-    void playerClickCellOnlineSlot(const int row, const int col);
-    void playerChangeShipVariantSlot(const int ID);
-    void playerChangeOrientationSlot(const int ID);
-    void playerClickCellOnlineSlotOpponent(const int row, const int col);
+    void playerClickCellOnlineSlot(const int row, const int col) const;
+    void playerChangeShipVariantSlot(const int ID) const;
+    void playerChangeOrientationSlot(const int ID) const;
+    void playerClickCellOnlineSlotOpponent(const int row, const int col) const;
 
 public:
     //Перечисление для страниц приложения.

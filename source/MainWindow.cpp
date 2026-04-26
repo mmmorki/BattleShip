@@ -201,7 +201,7 @@ void MainWindow::dataSlot(const int identifier, const int row, const int col)
 
 /* Слот для отправки оппоненту сигнала типа (1, row, col) об установке корабля
  * игроком. Сигнал отправляется от m_firstPlayerField. */
-void MainWindow::playerClickCellOnlineSlot(const int row, const int col)
+void MainWindow::playerClickCellOnlineSlot(const int row, const int col) const
 {
     switch (m_gameVariant)
     {
@@ -220,7 +220,7 @@ void MainWindow::playerClickCellOnlineSlot(const int row, const int col)
 
 /* Слот для отправки оппоненту сигнала типа (2, row, 0) о смене типа
  * устанавливаемого корабля. Сигнал отправляется от m_firstPlayerField. */
-void MainWindow::playerChangeShipVariantSlot(const int ID)
+void MainWindow::playerChangeShipVariantSlot(const int ID) const
 {
     switch (m_gameVariant)
     {
@@ -239,7 +239,7 @@ void MainWindow::playerChangeShipVariantSlot(const int ID)
 
 /* Слот для отправки оппоненту сигнала типа (3, row, 0) о смене ориентации
  * установки корабля. Сигнал отправляется от m_firstPLayerField. */
-void MainWindow::playerChangeOrientationSlot(const int ID)
+void MainWindow::playerChangeOrientationSlot(const int ID) const
 {
     switch (m_gameVariant)
     {
@@ -259,7 +259,7 @@ void MainWindow::playerChangeOrientationSlot(const int ID)
 /* Слот для отправки оппоненту сигнала типа (4, row, col) о нажатии на
  * [row, col] клетку m_secondPlayerHiddenField. Сигнал отправляется от
  * m_secondPlayerHiddenField. */
-void MainWindow::playerClickCellOnlineSlotOpponent(const int row, const int col)
+void MainWindow::playerClickCellOnlineSlotOpponent(const int row, const int col) const
 {
     switch (m_gameVariant)
     {
