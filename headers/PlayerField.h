@@ -58,6 +58,8 @@ public:
 
     void clear() override;
 
+    void updateShipBtnText() const;
+
     //Функции для онлайн режима
 
     void setSendToOnline();

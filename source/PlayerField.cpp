@@ -45,6 +45,7 @@ void PlayerField::clickCellSlot(const int row, const int col)
         m_createAShip->play();
         const int removedShipCellsCounter{ removeShipByCoord(row, col) };
         --m_shipsLeft[removedShipCellsCounter - 1];
+        updateShipBtnText();
         return;
     }
 
@@ -71,6 +72,7 @@ void PlayerField::clickCellSlot(const int row, const int col)
             shipsToBind.emplace_back(row, col + index);
     }
 
+    updateShipBtnText();
     createShipByCoord(shipsToBind);
 }
 
@@ -79,11 +81,11 @@ PlayerField::PlayerField(QWidget* parent)
     , m_addOrientation{ AddOrientation::Vertical }
     , m_shipsLeft{ 0, 0, 0, 0 }
     , m_addShipBtnLayout{ new QHBoxLayout{ this } }
-    , m_addShip1Btn{ new QPushButton{ "Лодка", this } }
-    , m_addShip2Btn{ new QPushButton{ "Шхуна", this } }
-    , m_addShip3Btn{ new QPushButton{ "Фрегат", this } }
-    , m_addShip4Btn{ new QPushButton{ "Линкор", this } }
-    , m_changeOrientationBtn{ new QPushButton{ "Направление", this } }
+    , m_addShip1Btn{ new QPushButton{ "Лодка\n(0/4)", this } }
+    , m_addShip2Btn{ new QPushButton{ "Шхуна\n(0/3)", this } }
+    , m_addShip3Btn{ new QPushButton{ "Фрегат\n(0/2)", this } }
+    , m_addShip4Btn{ new QPushButton{ "Линкор\n(0/1)", this } }
+    , m_changeOrientationBtn{ new QPushButton{ "Направление\n(Вертикальное)", this } }
     , m_createAShip{ new QSoundEffect{ this } }
     , m_changeAddOrientation{ new QSoundEffect{ this } }
     , m_changeAShip{ new QSoundEffect{ this } }
@@ -354,7 +356,16 @@ void PlayerField::clear()
     m_addMode = AddMode::None;
     m_shipsLeft = { 0, 0, 0, 0 };
 
+    updateShipBtnText();
     showShipButtons();
+}
+
+void PlayerField::updateShipBtnText() const
+{
+    m_addShip1Btn->setText(QString("Лодка\n(%1/4)").arg(m_shipsLeft[0]));
+    m_addShip2Btn->setText(QString("Шхуна\n(%1/3)").arg(m_shipsLeft[1]));
+    m_addShip3Btn->setText(QString("Фрегат\n(%1/2)").arg(m_shipsLeft[2]));
+    m_addShip4Btn->setText(QString("Линкор\n(%1/1)").arg(m_shipsLeft[3]));
 }
 
 void PlayerField::setSendToOnline()
