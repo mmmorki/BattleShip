@@ -627,6 +627,8 @@ void MainWindow::endGame()
     //Удаляем слоты подключения в режиме игры по сети.
     delete m_server;
     delete m_client;
+    m_server = nullptr;
+    m_client = nullptr;
 
     m_gameVariant = GameVariant::None;
 
