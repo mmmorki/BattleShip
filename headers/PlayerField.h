@@ -58,9 +58,7 @@ public:
 
     void clear() override;
 
-    void hideShips() const;
-
-    ///Функции для онлайн режима
+    //Функции для онлайн режима
 
     void setSendToOnline();
 

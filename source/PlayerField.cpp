@@ -38,7 +38,7 @@ void PlayerField::leaveCellSlot(const int row, const int col)
 
 void PlayerField::clickCellSlot(const int row, const int col)
 {
-    if (m_sendToOnline) emit playerClickCellOnlineSignal(row, col);
+    if (m_sendToOnline) playerClickCellOnlineSignal(row, col);
 
     if (m_cellData[row][col]->isShip())
     {
@@ -364,7 +364,36 @@ void PlayerField::setSendToOnline()
 
 void PlayerField::clickCellOnlineFunc(const int row, const int col)
 {
-    clickCellSlot(row, col);
+    if (m_cellData[row][col]->isShip())
+    {
+        const int removedShipCellsCounter{ removeShipByCoord(row, col) };
+        --m_shipsLeft[removedShipCellsCounter - 1];
+        return;
+    }
+
+    if (m_addMode == AddMode::None || isTooManyShips()
+        || isTooLong(row, col) || isShipNear(row, col)) return;
+
+    const int length{ static_cast<int>(m_addMode) };
+    std::vector<std::pair<int, int>> shipsToBind{};
+    shipsToBind.reserve(length  + 1);
+
+    if (m_addOrientation == AddOrientation::Vertical)
+    {
+        for (std::size_t index{ 0 }; index <= length; ++index)
+            shipsToBind.emplace_back(row + index, col);
+        ++m_shipsLeft[static_cast<int>(m_addMode)];
+    }
+
+    else if (m_addOrientation == AddOrientation::Horizontal)
+    {
+        ++m_shipsLeft[static_cast<int>(m_addMode)];
+
+        for (std::size_t index{ 0 }; index <= length; ++index)
+            shipsToBind.emplace_back(row, col + index);
+    }
+
+    createShipByCoord(shipsToBind);
 }
 
 void PlayerField::changeOrientationOnlineFunc(const int ID)
