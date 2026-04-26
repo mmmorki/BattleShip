@@ -278,7 +278,11 @@ void MainWindow::playerClickCellOnlineSlotOpponent(const int row, const int col)
 
 //Конструктор окна приложения
 MainWindow::MainWindow()
-    : m_central{ new QWidget{ this } }
+    : m_defeat{ new QSoundEffect{ this } }
+    , m_victory{ new QSoundEffect{ this } }
+    , m_menuClick{ new QSoundEffect{ this } }
+    , m_themeMusicManager{ new ThemeMusicManager{ this } }
+    , m_central{ new QWidget{ this } }
     , m_centralLayout{ new QGridLayout{ m_central } }
     , m_centralStack{ new QStackedWidget{ this } }
     , m_mainPage{ new QWidget{ this } }
@@ -289,30 +293,26 @@ MainWindow::MainWindow()
     , m_hostOrClientPageLayout{ new QVBoxLayout{ m_hostOrClientPage } }
     , m_chooseHostBtn{ new QPushButton{ "Создать игру", this } }
     , m_chooseClientBtn{ new QPushButton{ "Подключиться", this } }
-    , m_firstPlayerField{ new PlayerField{ this } }
-    , m_firstPlayerHiddenField{ new OpponentField{ this } }
-    , m_secondPlayerField{ new PlayerField{ this } }
-    , m_secondPlayerHiddenField{ new OpponentField{ this } }
-    , m_fromHostOrOnlineToMainBtn{ new QPushButton{ "Назад", this } }
-    , m_preparePage{ new QWidget{ this } }
-    , m_preparePageLayout{ new QGridLayout{ m_preparePage } }
-    , m_readyBtn{ new QPushButton{ "Готов", this } }
-    , m_gamePage{ new QWidget{ this } }
-    , m_gamePageLayout{ new QGridLayout{ m_gamePage } }
-    , m_readyLabel{ new QLabel{ "Противник не готов", this } }
-    , m_connectingPage{ new QWidget{ this } }
-    , m_connectingPageLayout{ new QGridLayout{ m_connectingPage } }
-    , m_connectingLabel{ new QLabel{ "Ожидание подключения", m_connectingPage } }
-    , m_whoseTurnLabel{ new QLabel{ this } }
-    , m_defeat{ new QSoundEffect{ this } }
-    , m_victory{ new QSoundEffect{ this } }
-    , m_menuClick{ new QSoundEffect{ this } }
+    , m_fromHostOrClientToMainBtn{ new QPushButton{ "Назад", this } }
     , m_chooseAddressPage{ new QWidget{ this } }
     , m_chooseAddressLine{ new QLineEdit{ "127.0.0.1", this } }
     , m_chooseAddressLabel{ new QLabel{ "Введите ip-адрес хоста:", this } }
     , m_chooseAddressBtn{ new QPushButton{ "Подключиться", this } }
     , m_chooseAddressLayout{ new QVBoxLayout{ this } }
-    , m_themeMusicManager{ new ThemeMusicManager{ this } }
+    , m_connectingPage{ new QWidget{ this } }
+    , m_connectingPageLayout{ new QGridLayout{ m_connectingPage } }
+    , m_connectingLabel{ new QLabel{ "Ожидание подключения", m_connectingPage } }
+    , m_preparePage{ new QWidget{ this } }
+    , m_preparePageLayout{ new QGridLayout{ m_preparePage } }
+    , m_firstPlayerField{ new PlayerField{ this } }
+    , m_secondPlayerField{ new PlayerField{ this } }
+    , m_readyBtn{ new QPushButton{ "Готов", this } }
+    , m_readyLabel{ new QLabel{ "Противник не готов", this } }
+    , m_gamePage{ new QWidget{ this } }
+    , m_gamePageLayout{ new QGridLayout{ m_gamePage } }
+    , m_firstPlayerHiddenField{ new OpponentField{ this } }
+    , m_secondPlayerHiddenField{ new OpponentField{ this } }
+    , m_whoseTurnLabel{ new QLabel{ this } }
 {
     /* Подключение сигналов кнопок о смене типа устанавливаемого корабля,
      * о смене ориентации установки кораблей, об установке корабля на
@@ -406,7 +406,7 @@ MainWindow::MainWindow()
             m_gameVariant = GameVariant::None;
         }
     };
-    connect(m_fromHostOrOnlineToMainBtn, &QPushButton::clicked,
+    connect(m_fromHostOrClientToMainBtn, &QPushButton::clicked,
         fromHostOrOnlineToMainBtnLambda);
 
     //Подключение кнопки завершения расстановки кораблей и лямбда для неё.
@@ -577,7 +577,7 @@ void MainWindow::setupHostOrClientPage() const
     m_hostOrClientPage->setLayout(m_hostOrClientPageLayout);
     m_hostOrClientPageLayout->insertWidget(0, m_chooseHostBtn);
     m_hostOrClientPageLayout->insertWidget(1, m_chooseClientBtn);
-    m_hostOrClientPageLayout->insertWidget(2, m_fromHostOrOnlineToMainBtn);
+    m_hostOrClientPageLayout->insertWidget(2, m_fromHostOrClientToMainBtn);
 }
 
 /* Настройка m_chooseAddressPage, на которой игрок-клиент вводит ip-адрес для

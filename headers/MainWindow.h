@@ -130,7 +130,7 @@ private:
     QVBoxLayout* m_hostOrClientPageLayout{ nullptr };
     QPushButton* m_chooseHostBtn{ nullptr };
     QPushButton* m_chooseClientBtn{ nullptr };
-    QPushButton* m_fromHostOrOnlineToMainBtn{ nullptr };
+    QPushButton* m_fromHostOrClientToMainBtn{ nullptr };
 
     //Поля, необходимые для страницы ввода ip-адреса хоста при игре как клиент.
     QWidget* m_chooseAddressPage{ nullptr };
