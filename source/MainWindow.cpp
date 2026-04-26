@@ -339,75 +339,33 @@ MainWindow::MainWindow()
     connect(m_secondPlayerHiddenField, &OpponentField::allShipsAreDestroyedSignal,
         this, &MainWindow::allShipsAreDestroyedSlot);
 
-    /* Настройка звуков поражения (m_defeat), победы (m_victory), нажатия
-     * основных кнопок игры (m_click) и активация воспроизведения фоновой музыки
-     * m_themeMusicManager. */
-    m_defeat->setSource(QUrl("qrc:/sounds/events/defeat.wav"));
-    m_defeat->setVolume(0.5);
-    m_victory->setSource(QUrl("qrc:/sounds/events/victory.wav"));
-    m_victory->setVolume(0.4);
-    m_menuClick->setSource(QUrl("qrc:/sounds/events/menu_click.wav"));
-    m_menuClick->setVolume(0.5);
-    m_themeMusicManager->playNext();
-
-    //Настройка окна приложения
+    //Настройка окна приложения.
     setFixedSize(1000, 500);
     setWindowTitle("Морской бой");
     setCentralWidget(m_central);
     m_central->setLayout(m_centralLayout);
     m_centralLayout->addWidget(m_centralStack);
 
-    /* Настройка m_mainPage, на которой игрок выбирает режим игры
-     * (локальный/по сети). */
-    m_centralStack->insertWidget(0, m_mainPage);
-    m_mainPage->setLayout(m_mainPageLayout);
-    m_mainPageLayout->insertWidget(0, m_chooseLocalBtn);
-    m_mainPageLayout->insertWidget(1, m_chooseOnlineBtn);
+    //Функция настройки звуков приложения.
+    setupSounds();
 
-    /* Настройка m_hostOrClientPage, на которой игрок выбирает способ игры по
-     * сети (хост/клиент). */
-    m_centralStack->insertWidget(1, m_hostOrClientPage);
-    m_hostOrClientPage->setLayout(m_hostOrClientPageLayout);
-    m_hostOrClientPageLayout->insertWidget(0, m_chooseHostBtn);
-    m_hostOrClientPageLayout->insertWidget(1, m_chooseClientBtn);
-    m_hostOrClientPageLayout->insertWidget(2, m_fromHostOrOnlineToMainBtn);
+    //Функция настройки m_mainPage.
+    setupMainPage();
 
-    /* Настройка m_chooseAddressPage, на которой игрок-клиент вводит ip-адрес для
-     * подключения к хосту. */
-    m_centralStack->insertWidget(5, m_chooseAddressPage);
-    m_chooseAddressPage->setLayout(m_chooseAddressLayout);
-    m_chooseAddressLayout->insertWidget(0, m_chooseAddressLabel);
-    m_chooseAddressLayout->insertWidget(1, m_chooseAddressLine);
-    m_chooseAddressLayout->insertWidget(2, m_chooseAddressBtn);
+    //Функция настройки m_hostOrClientPage.
+    setupHostOrClientPage();
 
-    //Настройка m_connectingPage, на которой игрок ожидает подключения оппонента.
-    m_centralStack->insertWidget(4, m_connectingPage);
-    m_connectingPage->setLayout(m_connectingPageLayout);
-    m_connectingPageLayout->addWidget(m_connectingLabel, 0, 0, 1, 1);
-    m_connectingLabel->setAlignment(Qt::AlignCenter);
+    //Функция настройки m_chooseAddressPage.
+    setupChooseAddressPage();
 
-    //Настройка m_preparePage, на которой игрок/игроки расставляют корабли.
-    m_centralStack->insertWidget(2, m_preparePage);
-    m_preparePage->setLayout(m_preparePageLayout);
-    m_preparePageLayout->addWidget(m_firstPlayerField, 1, 0, 1, 1);
-    m_preparePageLayout->addWidget(m_secondPlayerField, 1, 1, 1, 1);
-    m_preparePageLayout->addWidget(m_readyBtn, 2, 0, 1, 2);
-    m_preparePageLayout->addWidget(m_readyLabel, 0, 0, 1, 2);
-    m_readyLabel->setAlignment(Qt::AlignCenter);
-    QSizePolicy firstFieldPolicy{ m_firstPlayerField->sizePolicy() };
-    firstFieldPolicy.setRetainSizeWhenHidden(true);
-    m_firstPlayerField->setSizePolicy(firstFieldPolicy);
-    QSizePolicy secondFieldPolicy{ m_secondPlayerField->sizePolicy() };
-    secondFieldPolicy.setRetainSizeWhenHidden(true);
-    m_secondPlayerField->setSizePolicy(secondFieldPolicy);
+    //Функция настройки m_connectingPage.
+    setupConnectingPage();
 
-    //Настройка m_gamePage, на которой игрок/игроки атакуют поля друг друга.
-    m_centralStack->insertWidget(3, m_gamePage);
-    m_gamePage->setLayout(m_gamePageLayout);
-    m_gamePageLayout->addWidget(m_firstPlayerHiddenField, 1, 0, 1, 1);
-    m_gamePageLayout->addWidget(m_secondPlayerHiddenField, 1, 1, 1, 1);
-    m_gamePageLayout->addWidget(m_whoseTurnLabel, 0, 0, 1, 2);
-    m_whoseTurnLabel->setAlignment(Qt::AlignCenter);
+    //Функция настройки m_preparePage.
+    setupPreparePage();
+
+    //Функция настройки m_gamePage.
+    setupGamePage();
 
     //Подключения кнопки выбора локального режима игры и лямбда для неё.
     auto chooseLocalBtnLambda{
@@ -420,7 +378,7 @@ MainWindow::MainWindow()
 
             m_firstPlayerField->show();
             m_secondPlayerField->hide();
-            //Скрытие кнопки готовности противника (нужная для игры по сети).
+            //Скрытие кнопки готовности противника (нужна для игры по сети).
             m_readyLabel->hide();
         }
     };
@@ -585,6 +543,90 @@ MainWindow::MainWindow()
         }
     };
     connect(m_chooseHostBtn, &QPushButton::clicked, chooseHostBtnLambda);
+}
+
+/* Функция настройки звуков поражения (m_defeat), победы (m_victory), нажатия
+ * основных кнопок игры (m_click) и активации воспроизведения фоновой музыки
+ * m_themeMusicManager. */
+void MainWindow::setupSounds() const
+{
+    m_defeat->setSource(QUrl("qrc:/sounds/events/defeat.wav"));
+    m_defeat->setVolume(0.5);
+    m_victory->setSource(QUrl("qrc:/sounds/events/victory.wav"));
+    m_victory->setVolume(0.4);
+    m_menuClick->setSource(QUrl("qrc:/sounds/events/menu_click.wav"));
+    m_menuClick->setVolume(0.5);
+    m_themeMusicManager->playNext();
+}
+
+/* Функция настройки m_mainPage, на которой игрок выбирает режим игры
+ * (локальный/по сети). */
+void MainWindow::setupMainPage() const
+{
+    m_centralStack->insertWidget(0, m_mainPage);
+    m_mainPage->setLayout(m_mainPageLayout);
+    m_mainPageLayout->insertWidget(0, m_chooseLocalBtn);
+    m_mainPageLayout->insertWidget(1, m_chooseOnlineBtn);
+}
+
+/* Настройка m_hostOrClientPage, на которой игрок выбирает способ игры по
+ * сети (хост/клиент). */
+void MainWindow::setupHostOrClientPage() const
+{
+    m_centralStack->insertWidget(1, m_hostOrClientPage);
+    m_hostOrClientPage->setLayout(m_hostOrClientPageLayout);
+    m_hostOrClientPageLayout->insertWidget(0, m_chooseHostBtn);
+    m_hostOrClientPageLayout->insertWidget(1, m_chooseClientBtn);
+    m_hostOrClientPageLayout->insertWidget(2, m_fromHostOrOnlineToMainBtn);
+}
+
+/* Настройка m_chooseAddressPage, на которой игрок-клиент вводит ip-адрес для
+ * подключения к хосту. */
+void MainWindow::setupChooseAddressPage() const
+{
+    m_centralStack->insertWidget(2, m_chooseAddressPage);
+    m_chooseAddressPage->setLayout(m_chooseAddressLayout);
+    m_chooseAddressLayout->insertWidget(0, m_chooseAddressLabel);
+    m_chooseAddressLayout->insertWidget(1, m_chooseAddressLine);
+    m_chooseAddressLayout->insertWidget(2, m_chooseAddressBtn);
+}
+
+//Настройка m_connectingPage, на которой игрок ожидает подключения оппонента.
+void MainWindow::setupConnectingPage() const
+{
+    m_centralStack->insertWidget(3, m_connectingPage);
+    m_connectingPage->setLayout(m_connectingPageLayout);
+    m_connectingPageLayout->addWidget(m_connectingLabel, 0, 0, 1, 1);
+    m_connectingLabel->setAlignment(Qt::AlignCenter);
+}
+
+//Настройка m_preparePage, на которой игрок/игроки расставляют корабли.
+void MainWindow::setupPreparePage() const
+{
+    m_centralStack->insertWidget(4, m_preparePage);
+    m_preparePage->setLayout(m_preparePageLayout);
+    m_preparePageLayout->addWidget(m_firstPlayerField, 1, 0, 1, 1);
+    m_preparePageLayout->addWidget(m_secondPlayerField, 1, 1, 1, 1);
+    m_preparePageLayout->addWidget(m_readyBtn, 2, 0, 1, 2);
+    m_preparePageLayout->addWidget(m_readyLabel, 0, 0, 1, 2);
+    m_readyLabel->setAlignment(Qt::AlignCenter);
+    QSizePolicy firstFieldPolicy{ m_firstPlayerField->sizePolicy() };
+    firstFieldPolicy.setRetainSizeWhenHidden(true);
+    m_firstPlayerField->setSizePolicy(firstFieldPolicy);
+    QSizePolicy secondFieldPolicy{ m_secondPlayerField->sizePolicy() };
+    secondFieldPolicy.setRetainSizeWhenHidden(true);
+    m_secondPlayerField->setSizePolicy(secondFieldPolicy);
+}
+
+//Настройка m_gamePage, на которой игрок/игроки атакуют поля друг друга.
+void MainWindow::setupGamePage() const
+{
+    m_centralStack->insertWidget(5, m_gamePage);
+    m_gamePage->setLayout(m_gamePageLayout);
+    m_gamePageLayout->addWidget(m_firstPlayerHiddenField, 1, 0, 1, 1);
+    m_gamePageLayout->addWidget(m_secondPlayerHiddenField, 1, 1, 1, 1);
+    m_gamePageLayout->addWidget(m_whoseTurnLabel, 0, 0, 1, 2);
+    m_whoseTurnLabel->setAlignment(Qt::AlignCenter);
 }
 
 /* Функция начала боя после завершения расстановки кораблей. Корабли

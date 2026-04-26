@@ -43,10 +43,10 @@ public:
     {
         Main,
         ChooseHostOrClient,
+        ChooseAddress,
+        Connecting,
         Prepare,
         Game,
-        Connecting,
-        ChooseAddress,
     };
 
     //Перечисление для вариантов игры.
@@ -71,6 +71,27 @@ public:
 
     //Деструктор по умолчанию.
     ~MainWindow() override = default;
+
+    //Функция настройки звуков приложения.
+    void setupSounds() const;
+
+    //Функция настройки m_mainPage.
+    void setupMainPage() const;
+
+    //Функция настройки m_hostOrClientPage.
+    void setupHostOrClientPage() const;
+
+    //Функция настройки m_chooseAddressPage.
+    void setupChooseAddressPage() const;
+
+    //Функция настройки m_connectingPage.
+    void setupConnectingPage() const;
+
+    //Функция настройки m_preparePage.
+    void setupPreparePage() const;
+
+    //Функция настройки m_gamePage.
+    void setupGamePage() const;
 
     //Функция начала боя после завершения расстановки кораблей.
     void startGame();
