@@ -194,13 +194,11 @@ void OpponentField::clear()
 void OpponentField::activate()
 {
     m_canShot = true;
-    cancelFieldDark();
 }
 
 void OpponentField::deactivate()
 {
     m_canShot = false;
-    makeFieldDark();
 }
 
 void OpponentField::makeFieldDark()

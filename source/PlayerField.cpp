@@ -38,7 +38,7 @@ void PlayerField::leaveCellSlot(const int row, const int col)
 
 void PlayerField::clickCellSlot(const int row, const int col)
 {
-    if (m_sendToOnline) playerClickCellOnlineSignal(row, col);
+    playerClickCellOnlineSignal(row, col);
 
     if (m_cellData[row][col]->isShip())
     {
@@ -121,15 +121,13 @@ PlayerField::PlayerField(QWidget* parent)
             if (m_addOrientation == AddOrientation::Vertical)
             {
                 m_addOrientation = AddOrientation::Horizontal;
-                if (m_sendToOnline)
-                    emit playerChangeOrientationSignal(2);
+                emit playerChangeOrientationSignal(2);
             }
 
             else
             {
                 m_addOrientation = AddOrientation::Vertical;
-                if (m_sendToOnline)
-                    emit playerChangeOrientationSignal(1);
+                emit playerChangeOrientationSignal(1);
             }
         }
     };
@@ -138,8 +136,7 @@ PlayerField::PlayerField(QWidget* parent)
         [this] {
             m_changeAddOrientation->play();
             m_addMode = AddMode::Ship1;
-            if (m_sendToOnline)
-                emit playerChangeShipVariantSignal(0);
+            emit playerChangeShipVariantSignal(0);
         }
     };
 
@@ -147,8 +144,7 @@ PlayerField::PlayerField(QWidget* parent)
         [this] {
             m_changeAddOrientation->play();
             m_addMode = AddMode::Ship2;
-            if (m_sendToOnline)
-                emit playerChangeShipVariantSignal(1);
+            emit playerChangeShipVariantSignal(1);
         }
     };
 
@@ -156,8 +152,7 @@ PlayerField::PlayerField(QWidget* parent)
         [this] {
             m_changeAddOrientation->play();
             m_addMode = AddMode::Ship3;
-            if (m_sendToOnline)
-                emit playerChangeShipVariantSignal(2);
+            emit playerChangeShipVariantSignal(2);
         }
     };
 
@@ -165,8 +160,7 @@ PlayerField::PlayerField(QWidget* parent)
         [this] {
             m_changeAddOrientation->play();
             m_addMode = AddMode::Ship4;
-            if (m_sendToOnline)
-                emit playerChangeShipVariantSignal(3);
+            emit playerChangeShipVariantSignal(3);
         }
     };
 
@@ -366,11 +360,6 @@ void PlayerField::updateShipBtnText() const
     m_addShip2Btn->setText(QString("Шхуна\n(%1/3)").arg(m_shipsLeft[1]));
     m_addShip3Btn->setText(QString("Фрегат\n(%1/2)").arg(m_shipsLeft[2]));
     m_addShip4Btn->setText(QString("Линкор\n(%1/1)").arg(m_shipsLeft[3]));
-}
-
-void PlayerField::setSendToOnline()
-{
-    m_sendToOnline = true;
 }
 
 void PlayerField::clickCellOnlineFunc(const int row, const int col)

@@ -62,8 +62,6 @@ public:
 
     //Функции для онлайн режима
 
-    void setSendToOnline();
-
     void clickCellOnlineFunc(const int row, const int col);
 
     void changeOrientationOnlineFunc(const int ID);
@@ -80,7 +78,6 @@ private:
     QPushButton* m_addShip3Btn{ nullptr };
     QPushButton* m_addShip4Btn{ nullptr };
     QPushButton* m_changeOrientationBtn{ nullptr };
-    bool m_sendToOnline{ false };
     QSoundEffect* m_createAShip{ nullptr };
     QSoundEffect* m_changeAddOrientation{ nullptr };
     QSoundEffect* m_changeAShip{ nullptr };

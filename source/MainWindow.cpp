@@ -503,7 +503,6 @@ MainWindow::MainWindow()
             * оппоненту. Поле m_firstPlayerHiddenField устанавливается в режим
             * getFromOnline для предотвращения генерации сигналов shotsAreOver и
             * allShipsAreDestroyed. */
-            m_firstPlayerField->setSendToOnline();
             m_secondPlayerHiddenField->sendToOnline();
             m_firstPlayerHiddenField->getFromOnline();
         }
@@ -539,7 +538,6 @@ MainWindow::MainWindow()
             * оппоненту. Поле m_firstPlayerHiddenField устанавливается в режим
             * getFromOnline для предотвращения генерации сигналов shotsAreOver и
             * allShipsAreDestroyed. */
-            m_firstPlayerField->setSendToOnline();
             m_secondPlayerHiddenField->sendToOnline();
             m_firstPlayerHiddenField->getFromOnline();
         }
@@ -645,7 +643,6 @@ void MainWindow::startGame()
     if (m_gameVariant == GameVariant::Local)
     {
         setWindowTitle("Морской бой -> Локальная игра -> Бой");
-        m_firstPlayerHiddenField->deactivate();
         m_secondPlayerHiddenField->activate();
         m_whoseTurnLabel->setText("Ход Player1");
     }
