@@ -184,14 +184,14 @@ void OpponentField::activate()
     m_canShot = true;
 }
 
-void OpponentField::makeFieldDark()
+void OpponentField::makeFieldDark() const
 {
     for (std::size_t row{ 0 }; row < 10; ++row)
         for (std::size_t col{ 0 }; col < 10; ++col)
             m_cellData[row][col]->makeCellDark();
 }
 
-void OpponentField::cancelFieldDark()
+void OpponentField::cancelFieldDark() const
 {
     for (std::size_t row{ 0 }; row < 10; ++row)
         for (std::size_t col{ 0 }; col < 10; ++col)

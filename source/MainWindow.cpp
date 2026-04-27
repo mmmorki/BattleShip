@@ -15,6 +15,7 @@
 #include <QTcpSocket>
 #include <QSoundEffect>
 #include <QLineEdit>
+#include <QStatusBar>
 
 /* Слот для принятия сигнала исчерпывания у игрока возможности стрелять. Для
  * локального режима игры сигнал отправляется с обоих полей боя, переключается
@@ -289,6 +290,8 @@ MainWindow::MainWindow()
     , m_victory{ new QSoundEffect{ this } }
     , m_menuClick{ new QSoundEffect{ this } }
     , m_themeMusicManager{ new ThemeMusicManager{ this } }
+    , m_nextTrackBtn{ new QPushButton{ "Следующий трек", this } }
+    , m_previousTrackBtn{ new QPushButton{ "Предыдущий трек", this } }
     , m_central{ new QWidget{ this } }
     , m_centralLayout{ new QGridLayout{ m_central } }
     , m_centralStack{ new QStackedWidget{ this } }
@@ -358,6 +361,9 @@ MainWindow::MainWindow()
     //Функция настройки звуков приложения.
     setupSounds();
 
+    //Функция настройки элементов управления фоновой музыкой.
+    setupMusicControlPanel();
+
     //Функция настройки m_mainPage.
     setupMainPage();
 
@@ -375,6 +381,45 @@ MainWindow::MainWindow()
 
     //Функция настройки m_gamePage.
     setupGamePage();
+}
+
+/* Функция настройки звуков поражения (m_defeat), победы (m_victory), нажатия
+ * основных кнопок игры (m_click) и активации воспроизведения фоновой музыки
+ * m_themeMusicManager. */
+void MainWindow::setupSounds() const
+{
+    m_defeat->setSource(QUrl("qrc:/sounds/events/defeat.wav"));
+    m_defeat->setVolume(0.5);
+    m_victory->setSource(QUrl("qrc:/sounds/events/victory.wav"));
+    m_victory->setVolume(0.4);
+    m_menuClick->setSource(QUrl("qrc:/sounds/events/menu_click.wav"));
+    m_menuClick->setVolume(0.5);
+    m_themeMusicManager->playNext();
+}
+
+// Функция настройки элементов управления фоновой музыкой в статус-баре.
+void MainWindow::setupMusicControlPanel() const
+{
+    statusBar()->addPermanentWidget(m_previousTrackBtn);
+    statusBar()->addPermanentWidget(m_nextTrackBtn);
+
+    //Подключение кнопок переключения фоновой музыки.
+    connect(m_nextTrackBtn, &QPushButton::clicked, [this] {
+        m_themeMusicManager->playNext();
+    });
+    connect(m_previousTrackBtn, &QPushButton::clicked, [this] {
+        m_themeMusicManager->playPrevious();
+    });
+}
+
+/* Функция настройки m_mainPage, на которой игрок выбирает режим игры
+ * (локальный/по сети). */
+void MainWindow::setupMainPage()
+{
+    m_centralStack->insertWidget(0, m_mainPage);
+    m_mainPage->setLayout(m_mainPageLayout);
+    m_mainPageLayout->insertWidget(0, m_chooseLocalBtn);
+    m_mainPageLayout->insertWidget(1, m_chooseOnlineBtn);
 
     //Подключения кнопки выбора локального режима игры и лямбда для неё.
     auto chooseLocalBtnLambda{
@@ -403,6 +448,17 @@ MainWindow::MainWindow()
         }
     };
     connect(m_chooseOnlineBtn, &QPushButton::clicked, chooseOnlineBtnLambda);
+}
+
+/* Настройка m_hostOrClientPage, на которой игрок выбирает способ игры по
+ * сети (хост/клиент). */
+void MainWindow::setupHostOrClientPage()
+{
+    m_centralStack->insertWidget(1, m_hostOrClientPage);
+    m_hostOrClientPage->setLayout(m_hostOrClientPageLayout);
+    m_hostOrClientPageLayout->insertWidget(0, m_chooseHostBtn);
+    m_hostOrClientPageLayout->insertWidget(1, m_chooseClientBtn);
+    m_hostOrClientPageLayout->insertWidget(2, m_fromHostOrClientToMainBtn);
 
     /* Подключение кнопки возврата со страницы выбора способа игры по сети на
      * главную страницу и лямбда для неё. */
@@ -417,6 +473,85 @@ MainWindow::MainWindow()
     };
     connect(m_fromHostOrClientToMainBtn, &QPushButton::clicked,
         fromHostOrOnlineToMainBtnLambda);
+
+    /* Подключение кнопки выбора способа игры по сети как хоста и лямбда для
+     * неё. Создаётся m_server. Сигнал dataSignal от m_server подключается к
+     * dataSlot. */
+    auto chooseHostBtnLambda{
+        [this] {
+            m_menuClick->play();
+            m_server = new Server{ this };
+            connect(m_server, &Server::dataSignal, this, &MainWindow::dataSlot);
+            m_centralStack->setCurrentIndex(static_cast<int>(Page::Connecting));
+            setWindowTitle("Морской бой -> Игра по сети -> Ожидание подключения");
+            m_gameVariant = GameVariant::Server;
+        }
+    };
+    connect(m_chooseHostBtn, &QPushButton::clicked, chooseHostBtnLambda);
+
+    /* Подключение кнопки выбора способа игры по сети как клиента и лямбда для
+     * неё. */
+    auto chooseClientBtnLambda{
+        [this] {
+            m_menuClick->play();
+            m_centralStack->setCurrentIndex(static_cast<int>(Page::ChooseAddress));
+            setWindowTitle("Морской бой -> Игра по сети -> Подключение к хосту");
+            m_gameVariant = GameVariant::Client;
+        }
+    };
+    connect(m_chooseClientBtn, &QPushButton::clicked, chooseClientBtnLambda);
+}
+
+/* Настройка m_chooseAddressPage, на которой игрок-клиент вводит ip-адрес для
+ * подключения к хосту. */
+void MainWindow::setupChooseAddressPage()
+{
+    m_centralStack->insertWidget(2, m_chooseAddressPage);
+    m_chooseAddressPage->setLayout(m_chooseAddressLayout);
+    m_chooseAddressLayout->insertWidget(0, m_chooseAddressLabel);
+    m_chooseAddressLayout->insertWidget(1, m_chooseAddressLine);
+    m_chooseAddressLayout->insertWidget(2, m_chooseAddressBtn);
+
+    /* Подключение кнопки подтверждения ввода ip-адреса хоста и лямбда для неё.
+     * В конструктор m_client передаётся ip-адрес хоста, полученный из
+     * m_chooseAddressLine. Сигнал dataSignal от m_client подключается к
+     * dataSlot. */
+    auto chooseAddressBtnLambda{
+        [this] {
+            m_menuClick->play();
+            m_client = new Client{ m_chooseAddressLine->text(), this };
+            connect(m_client, &Client::dataSignal, this, &MainWindow::dataSlot);
+            m_centralStack->setCurrentIndex(static_cast<int>(Page::Connecting));
+        }
+    };
+    connect(m_chooseAddressBtn, &QPushButton::clicked, chooseAddressBtnLambda);
+}
+
+//Настройка m_connectingPage, на которой игрок ожидает подключения оппонента.
+void MainWindow::setupConnectingPage() const
+{
+    m_centralStack->insertWidget(3, m_connectingPage);
+    m_connectingPage->setLayout(m_connectingPageLayout);
+    m_connectingPageLayout->addWidget(m_connectingLabel, 0, 0, 1, 1);
+    m_connectingLabel->setAlignment(Qt::AlignCenter);
+}
+
+//Настройка m_preparePage, на которой игрок/игроки расставляют корабли.
+void MainWindow::setupPreparePage()
+{
+    m_centralStack->insertWidget(4, m_preparePage);
+    m_preparePage->setLayout(m_preparePageLayout);
+    m_preparePageLayout->addWidget(m_firstPlayerField, 1, 0, 1, 1);
+    m_preparePageLayout->addWidget(m_secondPlayerField, 1, 1, 1, 1);
+    m_preparePageLayout->addWidget(m_readyBtn, 2, 0, 1, 2);
+    m_preparePageLayout->addWidget(m_readyLabel, 0, 0, 1, 2);
+    m_readyLabel->setAlignment(Qt::AlignCenter);
+    QSizePolicy firstFieldPolicy{ m_firstPlayerField->sizePolicy() };
+    firstFieldPolicy.setRetainSizeWhenHidden(true);
+    m_firstPlayerField->setSizePolicy(firstFieldPolicy);
+    QSizePolicy secondFieldPolicy{ m_secondPlayerField->sizePolicy() };
+    secondFieldPolicy.setRetainSizeWhenHidden(true);
+    m_secondPlayerField->setSizePolicy(secondFieldPolicy);
 
     //Подключение кнопки завершения расстановки кораблей и лямбда для неё.
     auto readyBtnLambda{
@@ -493,120 +628,6 @@ MainWindow::MainWindow()
         }
     };
     connect(m_readyBtn, &QPushButton::clicked, readyBtnLambda);
-
-    /* Подключение кнопки подтверждения ввода ip-адреса хоста и лямбда для неё.
-     * В конструктор m_client передаётся ip-адрес хоста, полученный из
-     * m_chooseAddressLine. Сигнал dataSignal от m_client подключается к
-     * dataSlot. */
-    auto chooseAddressBtnLambda{
-        [this] {
-            m_menuClick->play();
-            m_client = new Client{ m_chooseAddressLine->text(), this };
-            connect(m_client, &Client::dataSignal, this, &MainWindow::dataSlot);
-            m_centralStack->setCurrentIndex(static_cast<int>(Page::Connecting));
-        }
-    };
-    connect(m_chooseAddressBtn, &QPushButton::clicked, chooseAddressBtnLambda);
-
-    /* Подключение кнопки выбора способа игры по сети как клиента и лямбда для
-     * неё. */
-    auto chooseClientBtnLambda{
-        [this] {
-            m_menuClick->play();
-            m_centralStack->setCurrentIndex(static_cast<int>(Page::ChooseAddress));
-            setWindowTitle("Морской бой -> Игра по сети -> Подключение к хосту");
-            m_gameVariant = GameVariant::Client;
-        }
-    };
-    connect(m_chooseClientBtn, &QPushButton::clicked, chooseClientBtnLambda);
-
-    /* Подключение кнопки выбора способа игры по сети как хоста и лямбда для
-     * неё. Создаётся m_server. Сигнал dataSignal от m_server подключается к
-     * dataSlot. */
-    auto chooseHostBtnLambda{
-        [this] {
-            m_menuClick->play();
-            m_server = new Server{ this };
-            connect(m_server, &Server::dataSignal, this, &MainWindow::dataSlot);
-            m_centralStack->setCurrentIndex(static_cast<int>(Page::Connecting));
-            setWindowTitle("Морской бой -> Игра по сети -> Ожидание подключения");
-            m_gameVariant = GameVariant::Server;
-        }
-    };
-    connect(m_chooseHostBtn, &QPushButton::clicked, chooseHostBtnLambda);
-}
-
-/* Функция настройки звуков поражения (m_defeat), победы (m_victory), нажатия
- * основных кнопок игры (m_click) и активации воспроизведения фоновой музыки
- * m_themeMusicManager. */
-void MainWindow::setupSounds() const
-{
-    m_defeat->setSource(QUrl("qrc:/sounds/events/defeat.wav"));
-    m_defeat->setVolume(0.5);
-    m_victory->setSource(QUrl("qrc:/sounds/events/victory.wav"));
-    m_victory->setVolume(0.4);
-    m_menuClick->setSource(QUrl("qrc:/sounds/events/menu_click.wav"));
-    m_menuClick->setVolume(0.5);
-    m_themeMusicManager->playNext();
-}
-
-/* Функция настройки m_mainPage, на которой игрок выбирает режим игры
- * (локальный/по сети). */
-void MainWindow::setupMainPage() const
-{
-    m_centralStack->insertWidget(0, m_mainPage);
-    m_mainPage->setLayout(m_mainPageLayout);
-    m_mainPageLayout->insertWidget(0, m_chooseLocalBtn);
-    m_mainPageLayout->insertWidget(1, m_chooseOnlineBtn);
-}
-
-/* Настройка m_hostOrClientPage, на которой игрок выбирает способ игры по
- * сети (хост/клиент). */
-void MainWindow::setupHostOrClientPage() const
-{
-    m_centralStack->insertWidget(1, m_hostOrClientPage);
-    m_hostOrClientPage->setLayout(m_hostOrClientPageLayout);
-    m_hostOrClientPageLayout->insertWidget(0, m_chooseHostBtn);
-    m_hostOrClientPageLayout->insertWidget(1, m_chooseClientBtn);
-    m_hostOrClientPageLayout->insertWidget(2, m_fromHostOrClientToMainBtn);
-}
-
-/* Настройка m_chooseAddressPage, на которой игрок-клиент вводит ip-адрес для
- * подключения к хосту. */
-void MainWindow::setupChooseAddressPage() const
-{
-    m_centralStack->insertWidget(2, m_chooseAddressPage);
-    m_chooseAddressPage->setLayout(m_chooseAddressLayout);
-    m_chooseAddressLayout->insertWidget(0, m_chooseAddressLabel);
-    m_chooseAddressLayout->insertWidget(1, m_chooseAddressLine);
-    m_chooseAddressLayout->insertWidget(2, m_chooseAddressBtn);
-}
-
-//Настройка m_connectingPage, на которой игрок ожидает подключения оппонента.
-void MainWindow::setupConnectingPage() const
-{
-    m_centralStack->insertWidget(3, m_connectingPage);
-    m_connectingPage->setLayout(m_connectingPageLayout);
-    m_connectingPageLayout->addWidget(m_connectingLabel, 0, 0, 1, 1);
-    m_connectingLabel->setAlignment(Qt::AlignCenter);
-}
-
-//Настройка m_preparePage, на которой игрок/игроки расставляют корабли.
-void MainWindow::setupPreparePage() const
-{
-    m_centralStack->insertWidget(4, m_preparePage);
-    m_preparePage->setLayout(m_preparePageLayout);
-    m_preparePageLayout->addWidget(m_firstPlayerField, 1, 0, 1, 1);
-    m_preparePageLayout->addWidget(m_secondPlayerField, 1, 1, 1, 1);
-    m_preparePageLayout->addWidget(m_readyBtn, 2, 0, 1, 2);
-    m_preparePageLayout->addWidget(m_readyLabel, 0, 0, 1, 2);
-    m_readyLabel->setAlignment(Qt::AlignCenter);
-    QSizePolicy firstFieldPolicy{ m_firstPlayerField->sizePolicy() };
-    firstFieldPolicy.setRetainSizeWhenHidden(true);
-    m_firstPlayerField->setSizePolicy(firstFieldPolicy);
-    QSizePolicy secondFieldPolicy{ m_secondPlayerField->sizePolicy() };
-    secondFieldPolicy.setRetainSizeWhenHidden(true);
-    m_secondPlayerField->setSizePolicy(secondFieldPolicy);
 }
 
 //Настройка m_gamePage, на которой игрок/игроки атакуют поля друг друга.

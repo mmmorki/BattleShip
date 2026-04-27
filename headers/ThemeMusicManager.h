@@ -13,6 +13,8 @@ public:
 
     void playNext();
 
+    void playPrevious();
+
 private:
     qsizetype m_currentIndex{};
     QMediaPlayer* m_audioPlayer{ nullptr };

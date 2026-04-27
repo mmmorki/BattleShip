@@ -30,9 +30,9 @@ public:
 
     void activate();
 
-    void makeFieldDark();
+    void makeFieldDark() const;
 
-    void cancelFieldDark();
+    void cancelFieldDark() const;
 
     //Функции для онлайн-режиме
 

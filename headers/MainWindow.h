@@ -75,20 +75,23 @@ public:
     //Функция настройки звуков приложения.
     void setupSounds() const;
 
+    //Функция настройки элементов управления фоновой музыкой.
+    void setupMusicControlPanel() const;
+
     //Функция настройки m_mainPage.
-    void setupMainPage() const;
+    void setupMainPage();
 
     //Функция настройки m_hostOrClientPage.
-    void setupHostOrClientPage() const;
+    void setupHostOrClientPage();
 
     //Функция настройки m_chooseAddressPage.
-    void setupChooseAddressPage() const;
+    void setupChooseAddressPage();
 
     //Функция настройки m_connectingPage.
     void setupConnectingPage() const;
 
     //Функция настройки m_preparePage.
-    void setupPreparePage() const;
+    void setupPreparePage();
 
     //Функция настройки m_gamePage.
     void setupGamePage() const;
@@ -113,6 +116,10 @@ private:
     QSoundEffect* m_victory{ nullptr };
     QSoundEffect* m_menuClick{ nullptr };
     ThemeMusicManager* m_themeMusicManager{ nullptr };
+
+    //Поля для управления фоновой музыкой.
+    QPushButton* m_nextTrackBtn{ nullptr };
+    QPushButton* m_previousTrackBtn{ nullptr };
 
     //Поля, необходимые для окна приложения.
     QWidget* m_central{ nullptr };
