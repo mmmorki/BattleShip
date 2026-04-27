@@ -34,6 +34,10 @@ public:
 
     void deactivate();
 
+    void makeFieldDark();
+
+    void cancelFieldDark();
+
     //Функции для онлайн-режиме
 
     void sendToOnline();

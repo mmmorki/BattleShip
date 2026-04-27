@@ -194,11 +194,27 @@ void OpponentField::clear()
 void OpponentField::activate()
 {
     m_canShot = true;
+    cancelFieldDark();
 }
 
 void OpponentField::deactivate()
 {
     m_canShot = false;
+    makeFieldDark();
+}
+
+void OpponentField::makeFieldDark()
+{
+    for (std::size_t row{ 0 }; row < 10; ++row)
+        for (std::size_t col{ 0 }; col < 10; ++col)
+            m_cellData[row][col]->makeCellDark();
+}
+
+void OpponentField::cancelFieldDark()
+{
+    for (std::size_t row{ 0 }; row < 10; ++row)
+        for (std::size_t col{ 0 }; col < 10; ++col)
+            m_cellData[row][col]->cancelCellDark();
 }
 
 //Функции для онлайн-режима

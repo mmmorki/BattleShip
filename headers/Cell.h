@@ -3,6 +3,7 @@
 
 #include <QPushButton>
 
+//Класс клетки поля.
 class Cell final : public QPushButton
 {
     Q_OBJECT
@@ -47,9 +48,13 @@ public:
 
     [[nodiscard]] bool isChecked() const;
 
-    std::pair<int, int> getRowAndCol() const;
+    [[nodiscard]] std::pair<int, int> getRowAndCol() const;
 
     void clear();
+
+    void makeCellDark();
+
+    void cancelCellDark();
 
 protected:
     void enterEvent(QEnterEvent* event) override;

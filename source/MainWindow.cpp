@@ -346,6 +346,8 @@ MainWindow::MainWindow()
     m_central->setLayout(m_centralLayout);
     m_centralLayout->addWidget(m_centralStack);
 
+    QPushButton btn{ this };
+
     //Функция настройки звуков приложения.
     setupSounds();
 
@@ -643,6 +645,7 @@ void MainWindow::startGame()
     if (m_gameVariant == GameVariant::Local)
     {
         setWindowTitle("Морской бой -> Локальная игра -> Бой");
+        m_firstPlayerHiddenField->deactivate();
         m_secondPlayerHiddenField->activate();
         m_whoseTurnLabel->setText("Ход Player1");
     }
