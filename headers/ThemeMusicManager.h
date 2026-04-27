@@ -2,12 +2,18 @@
 #define THEMEMUSICMANGER_H
 
 #include <QObject>
+#include <QUrl>
 
 class QMediaPlayer;
 class QAudioOutput;
 
 class ThemeMusicManager final : public QObject
 {
+    Q_OBJECT
+
+public: signals:
+    void trackChangedSignal(const QString& trackName);
+
 public:
     explicit ThemeMusicManager(QObject* parent = nullptr);
 
@@ -20,6 +26,7 @@ private:
     QMediaPlayer* m_audioPlayer{ nullptr };
     QAudioOutput* m_audioOutput{ nullptr };
     QList<QUrl> m_playlist{};
+    QList<QString> m_playlistNames{};
 };
 
 #endif //THEMEMUSICMANGER_H

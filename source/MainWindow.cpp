@@ -284,6 +284,11 @@ void MainWindow::playerClickCellOnlineSlotOpponent(const int row, const int col)
     }
 }
 
+void MainWindow::trackChangedSlot(const QString& trackName) const
+{
+    m_currentTrackNameLabel->setText("Сейчас играет: " + trackName);
+}
+
 //Конструктор окна приложения
 MainWindow::MainWindow()
     : m_defeat{ new QSoundEffect{ this } }
@@ -292,6 +297,7 @@ MainWindow::MainWindow()
     , m_themeMusicManager{ new ThemeMusicManager{ this } }
     , m_nextTrackBtn{ new QPushButton{ "Следующий трек", this } }
     , m_previousTrackBtn{ new QPushButton{ "Предыдущий трек", this } }
+    , m_currentTrackNameLabel{ new QLabel{ "Сейчас играет: ", this } }
     , m_central{ new QWidget{ this } }
     , m_centralLayout{ new QGridLayout{ m_central } }
     , m_centralStack{ new QStackedWidget{ this } }
@@ -349,6 +355,9 @@ MainWindow::MainWindow()
     connect(m_secondPlayerHiddenField, &OpponentField::allShipsAreDestroyedSignal,
         this, &MainWindow::allShipsAreDestroyedSlot);
 
+    connect(m_themeMusicManager, &ThemeMusicManager::trackChangedSignal,
+        this, &MainWindow::trackChangedSlot);
+
     //Настройка окна приложения.
     setFixedSize(1000, 500);
     setWindowTitle("Морской бой");
@@ -402,8 +411,9 @@ void MainWindow::setupMusicControlPanel() const
 {
     statusBar()->addPermanentWidget(m_previousTrackBtn);
     statusBar()->addPermanentWidget(m_nextTrackBtn);
+    statusBar()->addWidget(m_currentTrackNameLabel);
 
-    //Подключение кнопок переключения фоновой музыки.
+    //Подключение кнопок переключения фоновой музыки и надписи текущего трека.
     connect(m_nextTrackBtn, &QPushButton::clicked, [this] {
         m_themeMusicManager->playNext();
     });

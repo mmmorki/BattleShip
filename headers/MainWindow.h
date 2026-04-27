@@ -37,6 +37,9 @@ private slots:
     void playerChangeOrientationSlot(const int ID) const;
     void playerClickCellOnlineSlotOpponent(const int row, const int col) const;
 
+    //Слот для принятия сигналов о смене треков от m_themeMusicManager.
+    void trackChangedSlot(const QString& trackName) const;
+
 public:
     //Перечисление для страниц приложения.
     enum class Page
@@ -120,6 +123,7 @@ private:
     //Поля для управления фоновой музыкой.
     QPushButton* m_nextTrackBtn{ nullptr };
     QPushButton* m_previousTrackBtn{ nullptr };
+    QLabel* m_currentTrackNameLabel{ nullptr };
 
     //Поля, необходимые для окна приложения.
     QWidget* m_central{ nullptr };
