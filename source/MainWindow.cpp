@@ -19,9 +19,10 @@
 /* Слот для принятия сигнала исчерпывания у игрока возможности стрелять. Для
  * локального режима игры сигнал отправляется с обоих полей боя, переключается
  * переменная перечисления хода, активируется поле боя другого игрока, меняется
- * надпись хода. Для режима игры по сети сигнал отправляется только от
- * m_secondPlayerHiddenField, отправляется сигнал (0, 0, 3), который активирует
- * m_secondPlayerHiddenField оппонента, и меняется надпись хода. */
+ * надпись хода, одно поле затемняется, другое - осветляется. Для режима игры по
+ * сети сигнал отправляется только от m_secondPlayerHiddenField, отправляется
+ * сигнал (0, 0, 3), который активирует и осветляет m_secondPlayerHiddenField
+ * оппонента, затемняется m_firstPlayerHiddenField и меняется надпись хода. */
 void MainWindow::shotsAreOverSlot()
 {
     switch (m_gameVariant)
@@ -33,6 +34,8 @@ void MainWindow::shotsAreOverSlot()
         case Turn::Player1:
         {
             m_firstPlayerHiddenField->activate();
+            m_firstPlayerHiddenField->cancelFieldDark();
+            m_secondPlayerHiddenField->makeFieldDark();
             m_turn = Turn::Player2;
             m_whoseTurnLabel->setText("Ход Player2");
             return;
@@ -40,6 +43,8 @@ void MainWindow::shotsAreOverSlot()
         case Turn::Player2:
         {
             m_secondPlayerHiddenField->activate();
+            m_secondPlayerHiddenField->cancelFieldDark();
+            m_firstPlayerHiddenField->makeFieldDark();
             m_turn = Turn::Player1;
             m_whoseTurnLabel->setText("Ход Player1");
         }
@@ -49,12 +54,16 @@ void MainWindow::shotsAreOverSlot()
     case GameVariant::Server:
     {
         m_server->send(0, 0, 3);
+        m_firstPlayerHiddenField->cancelFieldDark();
+        m_secondPlayerHiddenField->makeFieldDark();
         m_whoseTurnLabel->setText("Ход противника");
         return;
     }
     case GameVariant::Client:
     {
         m_client->send(0, 0, 3);
+        m_firstPlayerHiddenField->cancelFieldDark();
+        m_secondPlayerHiddenField->makeFieldDark();
         m_whoseTurnLabel->setText("Ход противника");
     }
     default:;
@@ -153,11 +162,13 @@ void MainWindow::dataSlot(const int identifier, const int row, const int col)
             startGame();
 
         /* (0, 0, 3) - Оппонент завершил свой ход исчерпыванием возможности
-         * атаковать. Активируется m_secondPlayerHiddenField и сменяется надпись
-         * хода. */
+         * атаковать. Активируется и осветляется m_secondPlayerHiddenField,
+         * сменяется надпись хода и затемняется m_firstPlayerHiddenField. */
         else if (row == 0 && col == 3)
         {
             m_secondPlayerHiddenField->activate();
+            m_secondPlayerHiddenField->cancelFieldDark();
+            m_firstPlayerHiddenField->makeFieldDark();
             m_whoseTurnLabel->setText("Ваш ход");
         }
 
@@ -192,11 +203,7 @@ void MainWindow::dataSlot(const int identifier, const int row, const int col)
      * [row, col]. Происходит прострел m_firstPlayerHiddenField текущего игрока,
      * для чего оно сначала активируется, а затем деактивируется. */
     else if (identifier == 4)
-    {
-        m_firstPlayerHiddenField->activate();
         m_firstPlayerHiddenField->clickCellOnlineFunc(row, col);
-        m_firstPlayerHiddenField->deactivate();
-    }
 }
 
 /* Слот для отправки оппоненту сигнала типа (1, row, col) об установке корабля
@@ -497,14 +504,6 @@ MainWindow::MainWindow()
             m_client = new Client{ m_chooseAddressLine->text(), this };
             connect(m_client, &Client::dataSignal, this, &MainWindow::dataSlot);
             m_centralStack->setCurrentIndex(static_cast<int>(Page::Connecting));
-
-            /* Поля m_firstPlayerField и m_secondPlayerHiddenField
-            * устанавливаются в режим sendToOnline для передачи сигналов нажатий
-            * оппоненту. Поле m_firstPlayerHiddenField устанавливается в режим
-            * getFromOnline для предотвращения генерации сигналов shotsAreOver и
-            * allShipsAreDestroyed. */
-            m_secondPlayerHiddenField->sendToOnline();
-            m_firstPlayerHiddenField->getFromOnline();
         }
     };
     connect(m_chooseAddressBtn, &QPushButton::clicked, chooseAddressBtnLambda);
@@ -532,14 +531,6 @@ MainWindow::MainWindow()
             m_centralStack->setCurrentIndex(static_cast<int>(Page::Connecting));
             setWindowTitle("Морской бой -> Игра по сети -> Ожидание подключения");
             m_gameVariant = GameVariant::Server;
-
-            /* Поля m_firstPlayerField и m_secondPlayerHiddenField
-            * устанавливаются в режим sendToOnline для передачи сигналов нажатий
-            * оппоненту. Поле m_firstPlayerHiddenField устанавливается в режим
-            * getFromOnline для предотвращения генерации сигналов shotsAreOver и
-            * allShipsAreDestroyed. */
-            m_secondPlayerHiddenField->sendToOnline();
-            m_firstPlayerHiddenField->getFromOnline();
         }
     };
     connect(m_chooseHostBtn, &QPushButton::clicked, chooseHostBtnLambda);
@@ -631,8 +622,9 @@ void MainWindow::setupGamePage() const
 
 /* Функция начала боя после завершения расстановки кораблей. Корабли
  * m_first(second)PlayerField переносятся на m_first(second)PlayerHiddenField.
- * Если выбран режим игры по сети, то корабли m_firstPlayerHiddenField видны
- * игроку. */
+ * Если локальный режим игры, то первое поле затемняется. Если выбран режим игры
+ * по сети, то корабли m_firstPlayerHiddenField видны игроку, так же затемняется
+ * одно из полей в зависимости от типа подключения. */
 void MainWindow::startGame()
 {
     m_centralStack->setCurrentIndex(static_cast<int>(Page::Game));
@@ -644,6 +636,7 @@ void MainWindow::startGame()
     {
         setWindowTitle("Морской бой -> Локальная игра -> Бой");
         m_secondPlayerHiddenField->activate();
+        m_firstPlayerHiddenField->makeFieldDark();
         m_whoseTurnLabel->setText("Ход Player1");
     }
 
@@ -651,6 +644,7 @@ void MainWindow::startGame()
     {
         setWindowTitle("Морской бой -> Игра по сети (сервер) -> Бой");
         m_secondPlayerHiddenField->activate();
+        m_firstPlayerHiddenField->makeFieldDark();
         m_whoseTurnLabel->setText("Ваш ход");
         m_firstPlayerHiddenField->showShips();
     }
@@ -658,6 +652,7 @@ void MainWindow::startGame()
     else
     {
         setWindowTitle("Морской бой -> Игра по сети (клиент) -> Бой");
+        m_secondPlayerHiddenField->makeFieldDark();
         m_whoseTurnLabel->setText("Ход противника");
         m_firstPlayerHiddenField->showShips();
     }

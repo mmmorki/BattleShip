@@ -24,25 +24,17 @@ public:
 
     [[nodiscard]] bool allShipsDestroyed() const;
 
-    [[nodiscard]] bool canShot() const;
-
     void missAroundShip(const int row, const int col);
 
     void clear() override;
 
     void activate();
 
-    void deactivate();
-
     void makeFieldDark();
 
     void cancelFieldDark();
 
     //Функции для онлайн-режиме
-
-    void sendToOnline();
-
-    void getFromOnline();
 
     void clickCellOnlineFunc(const int row, const int col);
 
@@ -51,8 +43,6 @@ public:
 private:
     bool m_canShot{};
     int m_shipCellsLeft{};
-    bool m_sendToOnline{};
-    bool m_getFromOnline{};
     QSoundEffect* m_dropTheBombMiss{ nullptr };
     QSoundEffect* m_dropTheBombHit{ nullptr };
     QSoundEffect* m_dropTheBombDestroy{ nullptr };

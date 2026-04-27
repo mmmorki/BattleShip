@@ -23,8 +23,7 @@ void OpponentField::clickCellSlot(const int row, const int col)
 {
     if (!m_canShot || m_cellData[row][col]->isChecked()) return;
 
-    if (m_sendToOnline)
-        emit playerClickCellOnlineSignal(row, col);
+    emit playerClickCellOnlineSignal(row, col);
 
     if (m_cellData[row][col]->isShip())
     {
@@ -66,21 +65,17 @@ void OpponentField::clickCellSlot(const int row, const int col)
     {
         m_cellData[row][col]->setMissed();
         m_dropTheBombMiss->play();
-        if (!m_getFromOnline)
-            emit shotsAreOverSignal();
+        emit shotsAreOverSignal();
         m_canShot = false;
     }
 
-    if (m_shipCellsLeft == 0 && !m_getFromOnline)
+    if (m_shipCellsLeft == 0)
         emit allShipsAreDestroyedSignal();
 }
 
 OpponentField::OpponentField(QWidget* parent)
     : Field{ parent }
-    , m_canShot{ false }
     , m_shipCellsLeft{ 20 }
-    , m_sendToOnline{ false }
-    , m_getFromOnline{ false }
     , m_dropTheBombMiss{ new QSoundEffect{ this } }
     , m_dropTheBombHit{ new QSoundEffect{ this } }
     , m_dropTheBombDestroy{ new QSoundEffect{ this } }
@@ -96,11 +91,6 @@ OpponentField::OpponentField(QWidget* parent)
 bool OpponentField::allShipsDestroyed() const
 {
     return m_shipCellsLeft == 0;
-}
-
-bool OpponentField::canShot() const
-{
-    return m_canShot;
 }
 
 void OpponentField::missAroundShip(const int row, const int col)
@@ -187,18 +177,11 @@ void OpponentField::clear()
 
     m_shipCellsLeft = 20;
     m_canShot = false;
-    m_sendToOnline = false;
-    m_getFromOnline = false;
 }
 
 void OpponentField::activate()
 {
     m_canShot = true;
-}
-
-void OpponentField::deactivate()
-{
-    m_canShot = false;
 }
 
 void OpponentField::makeFieldDark()
@@ -217,19 +200,49 @@ void OpponentField::cancelFieldDark()
 
 //Функции для онлайн-режима
 
-void OpponentField::sendToOnline()
-{
-    m_sendToOnline = true;
-}
-
 void OpponentField::clickCellOnlineFunc(const int row, const int col)
 {
-    clickCellSlot(row, col);
-}
+    if (m_cellData[row][col]->isShip())
+    {
+        m_dropTheBombHit->play();
+        m_cellData[row][col]->setDamaged();
+        --m_shipCellsLeft;
 
-void OpponentField::getFromOnline()
-{
-    m_getFromOnline = true;
+        int boolSum = false;
+        Cell* startCell = m_cellData[row][col];
+        boolSum += static_cast<int>(
+            !startCell->isChecked());
+        Cell* currentCell = startCell->getNextShipCellPtr();
+
+        while (currentCell != startCell)
+        {
+            boolSum += static_cast<int>(
+                !currentCell->isChecked());
+            currentCell = currentCell->getNextShipCellPtr();
+        }
+
+        if (!boolSum)
+        {
+            m_dropTheBombDestroy->play();
+            startCell->setDestroyed();
+            missAroundShip(row, col);
+            currentCell = startCell->getNextShipCellPtr();
+
+            while (currentCell != startCell)
+            {
+                auto [row, col] = currentCell->getRowCol();
+                currentCell->setDestroyed();
+                missAroundShip(row, col);
+                currentCell = currentCell->getNextShipCellPtr();
+            }
+        }
+    }
+
+    else
+    {
+        m_cellData[row][col]->setMissed();
+        m_dropTheBombMiss->play();
+    }
 }
 
 void OpponentField::showShips() const
