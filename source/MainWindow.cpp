@@ -397,11 +397,11 @@ MainWindow::MainWindow()
  * m_themeMusicManager. */
 void MainWindow::setupSounds() const
 {
-    m_defeat->setSource(QUrl("qrc:/sounds/events/defeat.wav"));
+    m_defeat->setSource(QUrl("qrc:/resources/events/defeat.wav"));
     m_defeat->setVolume(0.5);
-    m_victory->setSource(QUrl("qrc:/sounds/events/victory.wav"));
+    m_victory->setSource(QUrl("qrc:/resources/events/victory.wav"));
     m_victory->setVolume(0.4);
-    m_menuClick->setSource(QUrl("qrc:/sounds/events/menu_click.wav"));
+    m_menuClick->setSource(QUrl("qrc:/resources/events/menu_click.wav"));
     m_menuClick->setVolume(0.5);
     m_themeMusicManager->playNext();
 }

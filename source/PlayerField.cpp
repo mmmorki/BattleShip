@@ -90,11 +90,11 @@ PlayerField::PlayerField(QWidget* parent)
     , m_changeAddOrientation{ new QSoundEffect{ this } }
     , m_changeAShip{ new QSoundEffect{ this } }
 {
-    m_createAShip->setSource(QUrl("qrc:/sounds/events/create_a_ship.wav"));
+    m_createAShip->setSource(QUrl("qrc:/resources/events/create_a_ship.wav"));
     m_createAShip->setVolume(0.1);
-    m_changeAddOrientation->setSource(QUrl("qrc:/sounds/events/change_add_orientation.wav"));
+    m_changeAddOrientation->setSource(QUrl("qrc:/resources/events/change_add_orientation.wav"));
     m_changeAddOrientation->setVolume(0.3);
-    m_changeAShip->setSource(QUrl("qrc:/sounds/events/change_a_ship.wav"));
+    m_changeAShip->setSource(QUrl("qrc:/resources/events/change_a_ship.wav"));
     m_changeAShip->setVolume(0.3);
 
     m_layout->addLayout(m_addShipBtnLayout, 10, 0, 1, 10);
